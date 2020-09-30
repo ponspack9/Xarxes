@@ -1,5 +1,6 @@
 #include "ModuleTaskManager.h"
 
+// OSCAR PONS GALLART & DAVID TELLO PANEA
 
 void ModuleTaskManager::threadMain()
 {
