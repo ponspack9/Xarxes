@@ -10,12 +10,28 @@ void ModuleTaskManager::threadMain()
 		// - Retrieve a task from scheduledTasks
 		// - Execute it
 		// - Insert it into finishedTasks
+		std::unique_lock<std::mutex> lock(mtx);
+
+		if (scheduledTasks.size() > 0)
+		{
+			Task *task = scheduledTasks.front();
+			task->execute();
+			finishedTasks.push(task);
+			scheduledTasks.pop();
+		}
+		else
+		{
+			conditionEvent.wait(lock);
+		}
 	}
 }
 
 bool ModuleTaskManager::init()
 {
 	// TODO 1: Create threads (they have to execute threadMain())
+
+	for (int i = 0; i < 4 ; i++)
+		threads[i] = std::thread(&ModuleTaskManager::threadMain);
 
 	return true;
 }
@@ -39,4 +55,6 @@ void ModuleTaskManager::scheduleTask(Task *task, Module *owner)
 	task->owner = owner;
 
 	// TODO 2: Insert the task into scheduledTasks so it is executed by some thread
+	scheduledTasks.push(task);
+	conditionEvent.notify_one();
 }
