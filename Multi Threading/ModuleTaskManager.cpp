@@ -3,7 +3,7 @@
 
 void ModuleTaskManager::threadMain()
 {
-	while (true)
+	while (!exitFlag)
 	{
 		// TODO 3:
 		// - Wait for new tasks to arrive
@@ -14,7 +14,7 @@ void ModuleTaskManager::threadMain()
 
 		if (scheduledTasks.size() > 0)
 		{
-			Task *task = scheduledTasks.front();
+			Task* task = scheduledTasks.front();
 			task->execute();
 			finishedTasks.push(task);
 			scheduledTasks.pop();
@@ -30,8 +30,8 @@ bool ModuleTaskManager::init()
 {
 	// TODO 1: Create threads (they have to execute threadMain())
 
-	for (int i = 0; i < 4 ; i++)
-		threads[i] = std::thread(&ModuleTaskManager::threadMain);
+	for (int i = 0; i < MAX_THREADS; i++)
+		threads[i] = std::thread(&ModuleTaskManager::threadMain, this);
 
 	return true;
 }
@@ -39,18 +39,29 @@ bool ModuleTaskManager::init()
 bool ModuleTaskManager::update()
 {
 	// TODO 4: Dispatch all finished tasks to their owner module (use Module::onTaskFinished() callback)
+	while (!finishedTasks.empty())
+	{
+		Task* task = finishedTasks.front();
+		task->owner->onTaskFinished(task);
 
+		finishedTasks.pop();
+	}
 	return true;
 }
 
 bool ModuleTaskManager::cleanUp()
 {
 	// TODO 5: Notify all threads to finish and join them
+	exitFlag = true;
+	conditionEvent.notify_all();
+
+	for (int i = 0; i < MAX_THREADS; i++)
+		threads[i].join();
 
 	return true;
 }
 
-void ModuleTaskManager::scheduleTask(Task *task, Module *owner)
+void ModuleTaskManager::scheduleTask(Task* task, Module* owner)
 {
 	task->owner = owner;
 
