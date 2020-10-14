@@ -34,12 +34,12 @@ public:
 
 public:
 	u_short port = 9999;
+	const char* serverAddr = "127.0.0.1";
 
 	SOCKET appSocket;
-	sockaddr_in bindAddr;
+	sockaddr_in remoteAddr;
 
-	char message_recieved[256] = "";
-	//char* message_recieved;
+
 	// temp
 	int count = 0;
 };

@@ -32,13 +32,10 @@ bool Application::Init()
 	}
 
 	// Specifying addresses	
-	bindAddr.sin_family = AF_INET; // IPv4 (AF_INET6 -> IPv6)
-	bindAddr.sin_port = htons(port);
-	//bindAddr.sin_addr.S_un.S_addr = "127.0.0.1";
-	bindAddr.sin_addr.S_un.S_addr = INADDR_ANY; // Any local IP address
-	// CLIENT
+	remoteAddr.sin_family = AF_INET; // IPv4 (AF_INET6 -> IPv6)
+	remoteAddr.sin_port = htons(port);
 	// Converting string to ip address as well as putin it inside the sockaddr_in
-	//inet_pton(AF_INET, "127.0.0.1", &bindAddr.sin_addr);
+	inet_pton(AF_INET, serverAddr, &remoteAddr.sin_addr);
 
 	// Binding
 	int enable = 1;
@@ -48,7 +45,7 @@ bool Application::Init()
 		return false;
 	}
 
-	int result = bind(appSocket, (const struct sockaddr*)&bindAddr, sizeof(bindAddr));
+	int result = bind(appSocket, (const struct sockaddr*)&remoteAddr, sizeof(remoteAddr));
 	
 
 	return true;
@@ -56,19 +53,16 @@ bool Application::Init()
 
 update_status Application::Update()
 {
-	
+
 	if (GetAsyncKeyState(VK_ESCAPE))
 		return UPDATE_STOP;
-	
-	int size = (int)sizeof(bindAddr);
-	//recvfrom(appSocket, &message_recieved[0], strlen(message_recieved), 0, (sockaddr*)&bindAddr, &size);
-	recvfrom(appSocket, message_recieved, 256 * sizeof(char), 0, (sockaddr*)&bindAddr, &size);
 
-	//const char* msg= "PING FROM SERVER";
+	char msg[256] = "PING TO SERVER";
+	//const char* msg = "PING TO SERVER";
 
-	printf("Recieving message '%s' from %lu using port %d \n", message_recieved, bindAddr.sin_addr.S_un.S_addr, port);
-
-	//sendto(appSocket, msg, strlen(msg), 0, (const sockaddr*)&bindAddr, sizeof(bindAddr));
+	printf("Sending message '%s' to %s using port %d \n", msg, serverAddr, port);
+	int len = strlen(msg);
+	sendto(appSocket, msg,256*sizeof(char) , 0, (const sockaddr*)&remoteAddr, sizeof(remoteAddr));
 	Sleep(5000);
 
 	return UPDATE_CONTINUE;
