@@ -25,9 +25,9 @@ int main(int argc, char** argv)
 		switch (state) {
 
 		case MAIN_INIT:
-			printf("Application Initialization --------------\n");
+			printf("Server Initialization --------------\n");
 			if (app->Init() == false) {
-				printf("Application Init exits with ERROR\n");
+				printf("Server Init exits with ERROR\n");
 				state = MAIN_EXIT;
 			}
 			else {
@@ -42,7 +42,7 @@ int main(int argc, char** argv)
 			int update_return = app->Update();
 
 			if (update_return == update_status::UPDATE_ERROR) {
-				printf("Application Update exits with ERROR\n");
+				printf("Server Update exits with ERROR\n");
 				state = MAIN_EXIT;
 			}
 
@@ -53,9 +53,9 @@ int main(int argc, char** argv)
 
 		case MAIN_FINISH:
 
-			printf("Application Cleaning --------------\n");
+			printf("Server Clean up --------------\n");
 			if (app->CleanUp() == false) {
-				printf("Application Cleaning exits with ERROR\n");
+				printf("Server Cleaning exits with ERROR\n");
 			}
 			else
 				ret = EXIT_SUCCESS;
