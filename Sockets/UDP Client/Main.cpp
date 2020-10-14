@@ -3,7 +3,7 @@
 
 int main()
 {
-	printf("Hello, I am the client\n");
+	printf("Hello I'm the Client! \n");
 	system("pause");
 
 	return 0;
