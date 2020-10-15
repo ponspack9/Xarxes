@@ -38,17 +38,9 @@ public:
 	char buffer[BUFFLEN];
 
 	char msgToSend[BUFFLEN] = "PING";
-	const char* sourceIP = "192.168.1.129";
 	const char* destIP = "127.0.0.1";
 
-	sockaddr_in sourceAddr;
 	sockaddr_in destAddr;
-
-
 	SOCKET appSocket;
-
-
-	// temp
-	int count = 0;
 };
 

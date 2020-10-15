@@ -52,11 +52,6 @@ bool Application::Init()
 		printWSErrorAndExit("Error binding port");
 		return false;
 	}
-
-	// Destination
-	//destAddr.sin_family = AF_INET;
-	//destAddr.sin_port = htons(port);
-	//inet_pton(AF_INET, destIP, &destAddr.sin_addr);
 	
 
 	return true;
@@ -67,7 +62,6 @@ update_status Application::Update()
 	
 	if (GetAsyncKeyState(VK_ESCAPE))
 		return UPDATE_STOP;
-
 
 
 	memset(buffer, '\0', BUFFLEN);
@@ -84,6 +78,7 @@ update_status Application::Update()
 
 	//printf("Recieved message '%s' from %s using port %d \n", buffer, destAddr.sin_addr.S_un.S_addr, ntohs(destAddr.sin_port));
 	printf("Recieved message '%s'\n", buffer);
+	Sleep(5000);
 
 	// Sending back the message
 	if (sendto(appSocket, msgToSend, BUFFLEN, 0, (struct sockaddr*)&destAddr, size) == SOCKET_ERROR)
@@ -91,12 +86,8 @@ update_status Application::Update()
 		printWSErrorAndExit("Failed 'sendto()'");
 		return UPDATE_ERROR;
 	}
+	printf("Sent response '%s' \n", msgToSend);
 
-
-
-
-	//sendto(appSocket, msg, strlen(msg), 0, (const sockaddr*)&bindAddr, sizeof(bindAddr));
-	Sleep(5000);
 
 	return UPDATE_CONTINUE;
 }
@@ -108,7 +99,6 @@ bool Application::CleanUp()
 	if (iResult != NO_ERROR)
 	{
 		printWSErrorAndExit("Error cleaning up");
-		return false;
 	}
 
 	printf("Cleaning sockets \n");

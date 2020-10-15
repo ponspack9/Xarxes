@@ -31,28 +31,10 @@ bool Application::Init()
 		return false;
 	}
 
-	// Specifying addresses	
-	// Local / source
-	//sourceAddr.sin_family = AF_INET; // IPv4 (AF_INET6 -> IPv6)
-	//sourceAddr.sin_port = htons(port);
-	//sourceAddr.sin_addr.S_un.S_addr = INADDR_ANY;
-
-	//// Binding
-	//int enable = 1;
-	//int res = setsockopt(appSocket, SOL_SOCKET, SO_REUSEADDR, (const char*)&enable, sizeof(int));
-	//if (res == SOCKET_ERROR) 
-	//{
-	//	printWSErrorAndExit("Error forcing reuse of address and port");
-	//	return false;
-	//}
-
-	//int result = bind(appSocket, (const struct sockaddr*)&sourceAddr, sizeof(sourceAddr));
-
 	// Destination
 	memset((char*)&destAddr, 0, sizeof(destAddr));
 	destAddr.sin_family = AF_INET;
 	destAddr.sin_port = htons(port);
-	//destAddr.sin_addr.S_un.S_addr = inet_addr(destIP);
 	inet_pton(AF_INET, destIP, &destAddr.sin_addr);
 	
 
@@ -72,6 +54,7 @@ update_status Application::Update()
 		printWSErrorAndExit("Failed 'sendto()'");
 		return UPDATE_ERROR;
 	}
+	// breaks ??
 	//printf("Sent message '%s' to %s using port %d \n", msgToSend, destAddr.sin_addr.S_un.S_addr, ntohs(destAddr.sin_port));
 	printf("Sent message '%s' \n", msgToSend);
 

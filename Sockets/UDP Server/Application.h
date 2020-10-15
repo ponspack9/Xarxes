@@ -39,7 +39,6 @@ public:
 	char buffer[BUFFLEN];
 
 	const char* msgToSend = "PONG";
-	const char* sourceIP = "192.168.1.129";
 	const char* destIP = "127.0.0.1";
 
 	sockaddr_in sourceAddr;
