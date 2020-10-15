@@ -21,9 +21,24 @@
     <ClCompile Include="Application.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ModuleUDP.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ModuleTaskManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Application.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Module.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ModuleUDP.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ModuleTaskManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

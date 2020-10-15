@@ -13,12 +13,14 @@ enum main_states {
 	MAIN_EXIT
 };
 
+Application* App = nullptr;
+
 int main(int argc, char** argv)
 {
-	Application* app = new Application();
+	App = new Application();
 
 	int state = MAIN_INIT;
-	int update_return = UPDATE_STOP;
+	update_status update_return = update_status::UPDATE_STOP;
 	int ret = EXIT_FAILURE;
 
 	while (state != MAIN_EXIT) {
@@ -28,7 +30,7 @@ int main(int argc, char** argv)
 
 			printf("Client Initialization --------------\n");
 
-			if (app->Init() == false) {
+			if (App->init() == false) {
 				printf("Client Init exits with ERROR\n");
 				state = MAIN_EXIT;
 			}
@@ -40,7 +42,7 @@ int main(int argc, char** argv)
 
 		case MAIN_UPDATE:
 
-			update_return = app->Update();
+			update_return = App->update();
 
 			if (update_return == update_status::UPDATE_ERROR) {
 				printf("Client Update exits with ERROR\n");
@@ -57,7 +59,7 @@ int main(int argc, char** argv)
 
 			printf("Client Clean up --------------\n");
 
-			if (app->CleanUp() == false)
+			if (App->cleanUp() == false)
 				printf("Client Cleaning exits with ERROR\n");
 
 			else
@@ -70,7 +72,7 @@ int main(int argc, char** argv)
 		}
 	}
 
-	delete app;
+	delete App;
 
 	return ret;
 }

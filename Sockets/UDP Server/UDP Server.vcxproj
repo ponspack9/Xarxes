@@ -24,6 +24,7 @@
     <ProjectGuid>{4171bb7a-e457-4b70-b275-70df0b57c1fa}</ProjectGuid>
     <RootNamespace>UDPServer</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>Server</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

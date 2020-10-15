@@ -1,107 +1,73 @@
 #include "Application.h"
+#include "ModuleUDP.h"
+#include "ModuleTaskManager.h"
 
-#include <iostream>
-#include <stdlib.h>
+
+#define ADD_MODULE(ModuleClass, module) \
+	module = new ModuleClass(); \
+	modules[numModules++] = module;
 
 Application::Application()
 {
+	// Create modules
+	ADD_MODULE(ModuleTaskManager, modTaskManager);
+	ADD_MODULE(ModuleUDP, modUDP);
 }
+
 
 Application::~Application()
 {
+	// Destroy modules
+	for (auto module : modules)
+	{
+		if (module == nullptr) continue;
+
+		delete module;
+	}
 }
 
-bool Application::Init()
+
+bool Application::init()
 {
-	// Library initialization
-	printf("Initializing WSA\n");
-	WSADATA wsaData;
-	int iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
-	if (iResult != NO_ERROR)
+	for (auto module : modules)
 	{
-		printWSErrorAndExit("Error initializing");
-		return false;
+		if (module == nullptr) continue;
+
+		if (module->init() == false)
+		{
+			return false;
+		}
 	}
-
-	// Socket initialization
-	appSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP); // IPPROTO_UDP
-	if (appSocket == INVALID_SOCKET)
-	{
-		printWSErrorAndExit("Error creating appSocket");
-		return false;
-	}
-
-	// Destination
-	memset((char*)&destAddr, 0, sizeof(destAddr));
-	destAddr.sin_family = AF_INET;
-	destAddr.sin_port = htons(port);
-	inet_pton(AF_INET, destIP, &destAddr.sin_addr);
-	
-
 	return true;
 }
 
-update_status Application::Update()
+update_status Application::update()
 {
-
-	if (GetAsyncKeyState(VK_ESCAPE))
-		return UPDATE_STOP;
-
-	int len = sizeof(destAddr);
-
-	if (sendto(appSocket, msgToSend, strlen(msgToSend), 0, (struct sockaddr*)&destAddr, len) == SOCKET_ERROR)
+	for (auto module : modules)
 	{
-		printWSErrorAndExit("Failed 'sendto()'");
-		return UPDATE_ERROR;
-	}
-	// breaks ??
-	//printf("Sent message '%s' to %s using port %d \n", msgToSend, destAddr.sin_addr.S_un.S_addr, ntohs(destAddr.sin_port));
-	printf("Sent message '%s' \n", msgToSend);
+		if (module == nullptr) continue;
 
+		update_status status = module->update();
 
-	memset(buffer, '\0', BUFFLEN);
-	if (recvfrom(appSocket,buffer,BUFFLEN,0, (struct sockaddr*)&destAddr, &len) == SOCKET_ERROR)
-	{
-		printWSErrorAndExit("Failed 'recvform()'");
-		return UPDATE_ERROR;
+		if (status != update_status::UPDATE_CONTINUE) return status;
 	}
 
-	printf("Recieved message: '%s'\n", buffer);
-
-
-	Sleep(5000);
-
-	return UPDATE_CONTINUE;
+	return update_status::UPDATE_CONTINUE;
 }
 
-bool Application::CleanUp()
+bool Application::cleanUp()
 {
-	printf("Cleaning up WSA\n");
-	int iResult = WSACleanup();
-	if (iResult != NO_ERROR)
+	for (int i = numModules; i > 0; --i)
 	{
-		printWSErrorAndExit("Error cleaning up");
-	}
+		Module* module = modules[i - 1];
 
-	printf("Cleaning sockets \n");
-	closesocket(appSocket);
+		if (module == nullptr) continue;
+
+		if (module->cleanUp() == false)
+		{
+			return false;
+		}
+	}
 
 	return true;
-
-}
-
-
-void Application::printWSErrorAndExit(const char* msg)
-{
-	wchar_t* s = NULL;
-	FormatMessageW(
-		FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM
-		| FORMAT_MESSAGE_IGNORE_INSERTS,
-		NULL,
-		WSAGetLastError(),
-		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-		(LPWSTR)&s,
-		0, NULL);
-	fprintf(stderr, "%s: %S\n", msg, s);
-	LocalFree(s);
 }
