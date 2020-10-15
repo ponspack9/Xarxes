@@ -32,23 +32,31 @@ bool Application::Init()
 	}
 
 	// Specifying addresses	
-	bindAddr.sin_family = AF_INET; // IPv4 (AF_INET6 -> IPv6)
-	bindAddr.sin_port = htons(port);
-	//bindAddr.sin_addr.S_un.S_addr = "127.0.0.1";
-	bindAddr.sin_addr.S_un.S_addr = INADDR_ANY; // Any local IP address
-	// CLIENT
-	// Converting string to ip address as well as putin it inside the sockaddr_in
-	//inet_pton(AF_INET, "127.0.0.1", &bindAddr.sin_addr);
+	// Local / source
+	sourceAddr.sin_family = AF_INET; // IPv4 (AF_INET6 -> IPv6)
+	sourceAddr.sin_port = htons(port);
+	sourceAddr.sin_addr.S_un.S_addr = INADDR_ANY;
 
 	// Binding
 	int enable = 1;
-	if (setsockopt(appSocket, SOL_SOCKET, SO_REUSEADDR, (const char*)&enable, sizeof(int)) == SOCKET_ERROR)
+	int res = setsockopt(appSocket, SOL_SOCKET, SO_REUSEADDR, (const char*)&enable, sizeof(int));
+	if (res == SOCKET_ERROR)
 	{
 		printWSErrorAndExit("Error forcing reuse of address and port");
 		return false;
 	}
 
-	int result = bind(appSocket, (const struct sockaddr*)&bindAddr, sizeof(bindAddr));
+	res = bind(appSocket, (const struct sockaddr*)&sourceAddr, sizeof(sourceAddr));
+	if (res == SOCKET_ERROR)
+	{
+		printWSErrorAndExit("Error binding port");
+		return false;
+	}
+
+	// Destination
+	//destAddr.sin_family = AF_INET;
+	//destAddr.sin_port = htons(port);
+	//inet_pton(AF_INET, destIP, &destAddr.sin_addr);
 	
 
 	return true;
@@ -59,14 +67,33 @@ update_status Application::Update()
 	
 	if (GetAsyncKeyState(VK_ESCAPE))
 		return UPDATE_STOP;
+
+
+
+	memset(buffer, '\0', BUFFLEN);
 	
-	int size = (int)sizeof(bindAddr);
-	//recvfrom(appSocket, &message_recieved[0], strlen(message_recieved), 0, (sockaddr*)&bindAddr, &size);
-	recvfrom(appSocket, message_recieved, 256 * sizeof(char), 0, (sockaddr*)&bindAddr, &size);
+	int size = sizeof(destAddr);
 
-	//const char* msg= "PING FROM SERVER";
 
-	printf("Recieving message '%s' from %lu using port %d \n", message_recieved, bindAddr.sin_addr.S_un.S_addr, port);
+	printf("Waiting incoming messages ...\n");
+	if (recvfrom(appSocket, buffer, BUFFLEN, 0, (struct sockaddr*)&destAddr, &size) == SOCKET_ERROR)
+	{
+		printWSErrorAndExit("Failed 'recvform()'");
+		return UPDATE_ERROR;
+	}
+
+	//printf("Recieved message '%s' from %s using port %d \n", buffer, destAddr.sin_addr.S_un.S_addr, ntohs(destAddr.sin_port));
+	printf("Recieved message '%s'\n", buffer);
+
+	// Sending back the message
+	if (sendto(appSocket, msgToSend, BUFFLEN, 0, (struct sockaddr*)&destAddr, size) == SOCKET_ERROR)
+	{
+		printWSErrorAndExit("Failed 'sendto()'");
+		return UPDATE_ERROR;
+	}
+
+
+
 
 	//sendto(appSocket, msg, strlen(msg), 0, (const sockaddr*)&bindAddr, sizeof(bindAddr));
 	Sleep(5000);

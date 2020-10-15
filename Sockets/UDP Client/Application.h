@@ -2,6 +2,7 @@
 
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
+#define BUFFLEN 512
 
 #include <Windows.h>
 #include <WinSock2.h>
@@ -34,10 +35,17 @@ public:
 
 public:
 	u_short port = 9999;
-	const char* serverAddr = "127.0.0.1";
+	char buffer[BUFFLEN];
+
+	char msgToSend[BUFFLEN] = "PING";
+	const char* sourceIP = "192.168.1.129";
+	const char* destIP = "127.0.0.1";
+
+	sockaddr_in sourceAddr;
+	sockaddr_in destAddr;
+
 
 	SOCKET appSocket;
-	sockaddr_in remoteAddr;
 
 
 	// temp

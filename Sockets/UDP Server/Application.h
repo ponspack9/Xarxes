@@ -3,6 +3,8 @@
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
 
+#define BUFFLEN 512
+
 #include <Windows.h>
 #include <WinSock2.h>
 #include <WS2tcpip.h>
@@ -34,13 +36,15 @@ public:
 
 public:
 	u_short port = 9999;
+	char buffer[BUFFLEN];
+
+	const char* msgToSend = "PONG";
+	const char* sourceIP = "192.168.1.129";
+	const char* destIP = "127.0.0.1";
+
+	sockaddr_in sourceAddr;
+	sockaddr_in destAddr;
 
 	SOCKET appSocket;
-	sockaddr_in bindAddr;
-
-	char message_recieved[256] = "";
-	//char* message_recieved;
-	// temp
-	int count = 0;
 };
 
