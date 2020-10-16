@@ -1,15 +1,22 @@
-#include "ModuleUDP.h"
-
 #include <iostream>
 #include <stdlib.h>
 
-ModuleUDP::ModuleUDP()
-{
-}
+#include "ModuleUDP.h"
+#include "ModuleTaskManager.h"
 
-ModuleUDP::~ModuleUDP()
+
+class TaskNetwork : public Task
 {
-}
+	void execute() override
+	{
+		App->modUDP->pingPong();
+	}
+};
+
+ModuleUDP::ModuleUDP(){}
+
+ModuleUDP::~ModuleUDP(){}
+
 
 bool ModuleUDP::init()
 {
@@ -41,7 +48,22 @@ bool ModuleUDP::init()
 	return true;
 }
 
+void ModuleUDP::onTaskFinished(Task* task)
+{
+
+}
 update_status ModuleUDP::update()
+{
+	printf("Enter a message to send to the server:\n");
+	std::cin.get(msgToSend, BUFFLEN);
+	std::cin.ignore();
+
+	// Making a task to do network stuff
+	App->modTaskManager->scheduleTask(new TaskNetwork, this);
+
+	return update_status::UPDATE_CONTINUE;
+}
+update_status ModuleUDP::pingPong()
 {
 
 	if (GetAsyncKeyState(VK_ESCAPE))
@@ -56,7 +78,7 @@ update_status ModuleUDP::update()
 	}
 	// breaks ??
 	//printf("Sent message '%s' to %s using port %d \n", msgToSend, destAddr.sin_addr.S_un.S_addr, ntohs(destAddr.sin_port));
-	printf("Sent message '%s' \n", msgToSend);
+	//printf("Sent message '%s' \n", msgToSend);
 
 
 	memset(buffer, '\0', BUFFLEN);
@@ -66,10 +88,12 @@ update_status ModuleUDP::update()
 		return update_status::UPDATE_ERROR;
 	}
 
-	printf("Recieved message: '%s'\n", buffer);
+	printf("-----------------------------------\n");
+	printf("Recieved confirmation message: '%s'\n", buffer);
+	printf("-----------------------------------\n");
 
 
-	Sleep(5000);
+	//Sleep(5000);
 
 	return update_status::UPDATE_CONTINUE;
 }

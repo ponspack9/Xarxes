@@ -23,6 +23,10 @@ public:
 
 	bool init() override;
 
+	update_status pingPong();
+
+	void onTaskFinished(Task* task) override;
+
 	update_status update() override;
 
 	bool cleanUp() override;
@@ -40,5 +44,6 @@ public:
 
 	sockaddr_in destAddr;
 	SOCKET appSocket;
+
 };
 

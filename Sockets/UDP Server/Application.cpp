@@ -68,7 +68,7 @@ update_status Application::Update()
 	
 	int size = sizeof(destAddr);
 
-
+	printf("-----------------------------------\n");
 	printf("Waiting incoming messages ...\n");
 	if (recvfrom(appSocket, buffer, BUFFLEN, 0, (struct sockaddr*)&destAddr, &size) == SOCKET_ERROR)
 	{
@@ -78,15 +78,15 @@ update_status Application::Update()
 
 	//printf("Recieved message '%s' from %s using port %d \n", buffer, destAddr.sin_addr.S_un.S_addr, ntohs(destAddr.sin_port));
 	printf("Recieved message '%s'\n", buffer);
-	Sleep(5000);
+	Sleep(3000);
 
 	// Sending back the message
-	if (sendto(appSocket, msgToSend, BUFFLEN, 0, (struct sockaddr*)&destAddr, size) == SOCKET_ERROR)
+	if (sendto(appSocket, buffer, BUFFLEN, 0, (struct sockaddr*)&destAddr, size) == SOCKET_ERROR)
 	{
 		printWSErrorAndExit("Failed 'sendto()'");
 		return UPDATE_ERROR;
 	}
-	printf("Sent response '%s' \n", msgToSend);
+	printf("Sent acknowledge '%s' \n", buffer);
 
 
 	return UPDATE_CONTINUE;
