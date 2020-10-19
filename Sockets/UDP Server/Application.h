@@ -42,7 +42,7 @@ public:
 private:
 
 	// All modules
-	Module* modules[2] = {};
+	Module* modules[1] = {};
 	int numModules = 0;
 };
 

@@ -73,7 +73,7 @@ update_status ModuleUDP::update()
 	// Making a task to do network stuff
 	TaskNetwork* task = new TaskNetwork;
 	strcpy_s(task->msg, BUFFLEN, buffer);
-	App->modTaskManager->scheduleTask(task, this)
+	App->modTaskManager->scheduleTask(task, this);
 
 #elif defined(PING_PONG_EXERCISE)
 	

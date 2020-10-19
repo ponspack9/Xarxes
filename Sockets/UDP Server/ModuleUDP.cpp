@@ -53,6 +53,7 @@ bool ModuleUDP::init()
 		return false;
 	}
 
+	printf("Waiting for incoming messages ...\n");
 
 	return true;
 }
@@ -69,7 +70,6 @@ update_status ModuleUDP::update()
 	int size = sizeof(destAddr);
 
 	printf("-----------------------------------\n");
-	printf("Waiting incoming messages ...\n");
 	if (recvfrom(appSocket, buffer, BUFFLEN, 0, (struct sockaddr*)&destAddr, &size) == SOCKET_ERROR)
 	{
 		printWSErrorAndExit("Failed 'recvform()'");
@@ -80,6 +80,11 @@ update_status ModuleUDP::update()
 	printf("Recieved message '%s'\n", buffer);
 	Sleep(500);
 
+#ifdef PING_PONG_EXERCISE
+	msg_count++;
+	sprintf_s(buffer, "PONG");
+#endif
+
 	// Sending back the message
 	if (sendto(appSocket, buffer, BUFFLEN, 0, (struct sockaddr*)&destAddr, size) == SOCKET_ERROR)
 	{
@@ -89,7 +94,7 @@ update_status ModuleUDP::update()
 	printf("Sent acknowledge '%s' \n", buffer);
 
 
-	return update_status::UPDATE_CONTINUE;
+	return (msg_count < MSG_TO_SEND)? update_status::UPDATE_CONTINUE : update_status::UPDATE_STOP;
 }
 
 bool ModuleUDP::cleanUp()

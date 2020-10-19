@@ -1,19 +1,7 @@
 #pragma once
 
-#define WIN32_LEAN_AND_MEAN
-#define NOMINMAX
-#define BUFFLEN 512
-
-#include <Windows.h>
-#include <WinSock2.h>
-#include <WS2tcpip.h>
-
 #include "Module.h"
 #include <mutex>
-
-#pragma comment(lib, "ws2_32.lib")
-
-
 
 class ModuleUDP : public Module
 {
