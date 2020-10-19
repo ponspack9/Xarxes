@@ -14,8 +14,8 @@
 
 
 // Macros to define the type of exercise
-#define USE_UDP
-//#define USE_TCP
+//#define USE_UDP
+#define USE_TCP
 
 // Uncomment only one of these two
 #define PING_PONG_EXERCISE

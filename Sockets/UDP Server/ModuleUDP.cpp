@@ -67,12 +67,12 @@ update_status ModuleUDP::update()
 
 	memset(buffer, '\0', BUFFLEN);
 
-	int size = sizeof(destAddr);
-
 	printf("-----------------------------------\n");
+	
+	int size = sizeof(destAddr);
 	if (recvfrom(appSocket, buffer, BUFFLEN, 0, (struct sockaddr*)&destAddr, &size) == SOCKET_ERROR)
 	{
-		printWSErrorAndExit("Failed 'recvform()'");
+		printWSErrorAndExit("Failed 'recvfrom()'");
 		return update_status::UPDATE_ERROR;
 	}
 

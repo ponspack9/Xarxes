@@ -75,19 +75,21 @@ update_status ModuleUDP::update()
 	strcpy_s(task->msg, BUFFLEN, buffer);
 	App->modTaskManager->scheduleTask(task, this);
 
+	return update_status::UPDATE_CONTINUE;
+
 #elif defined(PING_PONG_EXERCISE)
 	
 	
-	pingPong("PING");
+	update_status status = pingPong("PING");
+	if (status != update_status::UPDATE_CONTINUE) return status;
 
 	msg_sent++;
-
-	//std::cout << "SENT: " << msg_sent << std::endl << "RECIEVED: " << msg_recieved << std::endl;
-
+	
 	if (msg_sent >= MSG_TO_SEND) return update_status::UPDATE_STOP;
 
 	Sleep(500);
 
+	//std::cout << "SENT: " << msg_sent << std::endl << "RECIEVED: " << msg_recieved << std::endl;
 
 #else 
 	printf("PLEASE UNCOMMENT THE PREPROCESSOR DIRECTIVES INSIDE 'Macros.h'\n");
@@ -95,7 +97,6 @@ update_status ModuleUDP::update()
 
 #endif
 
-	return update_status::UPDATE_CONTINUE;
 }
 update_status ModuleUDP::pingPong(const char* msgToSend)
 {

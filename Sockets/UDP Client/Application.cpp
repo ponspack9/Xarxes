@@ -1,5 +1,6 @@
 #include "Application.h"
 #include "ModuleUDP.h"
+#include "ModuleTCP.h"
 #include "ModuleTaskManager.h"
 
 
@@ -11,7 +12,11 @@ Application::Application()
 {
 	// Create modules
 	ADD_MODULE(ModuleTaskManager, modTaskManager);
+#if defined(USE_UDP)
 	ADD_MODULE(ModuleUDP, modUDP);
+#elif defined(USE_TCP)
+	ADD_MODULE(ModuleTCP, modTCP);
+#endif
 }
 
 

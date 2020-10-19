@@ -4,6 +4,7 @@
 // Module declarations
 class Module;
 class ModuleUDP;
+class ModuleTCP;
 //class ModuleTaskManager;
 
 enum class update_status
@@ -36,6 +37,7 @@ public:
 
 	// Modules
 	ModuleUDP* modUDP = nullptr;
+	ModuleTCP* modTCP = nullptr;
 	//ModuleTaskManager* modTaskManager = nullptr;
 
 

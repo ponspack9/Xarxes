@@ -27,6 +27,9 @@
     <ClCompile Include="ModuleTaskManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ModuleTCP.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Application.h">
@@ -39,6 +42,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ModuleTaskManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ModuleTCP.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
