@@ -1,125 +1,73 @@
 #include "Application.h"
+#include "ModuleUDP.h"
+//#include "ModuleTaskManager.h"
 
-#include <iostream>
-#include <stdlib.h>
+
+#define ADD_MODULE(ModuleClass, module) \
+	module = new ModuleClass(); \
+	modules[numModules++] = module;
 
 Application::Application()
 {
+	// Create modules
+	//ADD_MODULE(ModuleTaskManager, modTaskManager);
+	ADD_MODULE(ModuleUDP, modUDP);
 }
+
 
 Application::~Application()
 {
+	// Destroy modules
+	for (auto module : modules)
+	{
+		if (module == nullptr) continue;
+
+		delete module;
+	}
 }
 
-bool Application::Init()
+
+bool Application::init()
 {
-	// Library initialization
-	printf("Initializing WSA\n");
-	WSADATA wsaData;
-	int iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
-	if (iResult != NO_ERROR)
+	for (auto module : modules)
 	{
-		printWSErrorAndExit("Error initializing");
-		return false;
+		if (module == nullptr) continue;
+
+		if (module->init() == false)
+		{
+			return false;
+		}
 	}
-
-	// Socket initialization
-	appSocket = socket(AF_INET, SOCK_DGRAM, 0);
-	if (appSocket == INVALID_SOCKET)
-	{
-		printWSErrorAndExit("Error creating appSocket");
-		return false;
-	}
-
-	// Specifying addresses	
-	// Local / source
-	sourceAddr.sin_family = AF_INET; // IPv4 (AF_INET6 -> IPv6)
-	sourceAddr.sin_port = htons(port);
-	sourceAddr.sin_addr.S_un.S_addr = INADDR_ANY;
-
-	// Binding
-	int enable = 1;
-	int res = setsockopt(appSocket, SOL_SOCKET, SO_REUSEADDR, (const char*)&enable, sizeof(int));
-	if (res == SOCKET_ERROR)
-	{
-		printWSErrorAndExit("Error forcing reuse of address and port");
-		return false;
-	}
-
-	res = bind(appSocket, (const struct sockaddr*)&sourceAddr, sizeof(sourceAddr));
-	if (res == SOCKET_ERROR)
-	{
-		printWSErrorAndExit("Error binding port");
-		return false;
-	}
-	
-
 	return true;
 }
 
-update_status Application::Update()
+update_status Application::update()
 {
-	
-	if (GetAsyncKeyState(VK_ESCAPE))
-		return UPDATE_STOP;
-
-
-	memset(buffer, '\0', BUFFLEN);
-	
-	int size = sizeof(destAddr);
-
-	printf("-----------------------------------\n");
-	printf("Waiting incoming messages ...\n");
-	if (recvfrom(appSocket, buffer, BUFFLEN, 0, (struct sockaddr*)&destAddr, &size) == SOCKET_ERROR)
+	for (auto module : modules)
 	{
-		printWSErrorAndExit("Failed 'recvform()'");
-		return UPDATE_ERROR;
+		if (module == nullptr) continue;
+
+		update_status status = module->update();
+
+		if (status != update_status::UPDATE_CONTINUE) return status;
 	}
 
-	//printf("Recieved message '%s' from %s using port %d \n", buffer, destAddr.sin_addr.S_un.S_addr, ntohs(destAddr.sin_port));
-	printf("Recieved message '%s'\n", buffer);
-	Sleep(500);
-
-	// Sending back the message
-	if (sendto(appSocket, buffer, BUFFLEN, 0, (struct sockaddr*)&destAddr, size) == SOCKET_ERROR)
-	{
-		printWSErrorAndExit("Failed 'sendto()'");
-		return UPDATE_ERROR;
-	}
-	printf("Sent acknowledge '%s' \n", buffer);
-
-
-	return UPDATE_CONTINUE;
+	return update_status::UPDATE_CONTINUE;
 }
 
-bool Application::CleanUp()
+bool Application::cleanUp()
 {
-	printf("Cleaning up WSA\n");
-	int iResult = WSACleanup();
-	if (iResult != NO_ERROR)
+	for (int i = numModules; i > 0; --i)
 	{
-		printWSErrorAndExit("Error cleaning up");
-	}
+		Module* module = modules[i - 1];
 
-	printf("Cleaning sockets \n");
-	closesocket(appSocket);
+		if (module == nullptr) continue;
+
+		if (module->cleanUp() == false)
+		{
+			return false;
+		}
+	}
 
 	return true;
-
-}
-
-
-void Application::printWSErrorAndExit(const char* msg)
-{
-	wchar_t* s = NULL;
-	FormatMessageW(
-		FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM
-		| FORMAT_MESSAGE_IGNORE_INSERTS,
-		NULL,
-		WSAGetLastError(),
-		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-		(LPWSTR)&s,
-		0, NULL);
-	fprintf(stderr, "%s: %S\n", msg, s);
-	LocalFree(s);
 }

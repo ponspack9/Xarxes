@@ -1,19 +1,12 @@
 #pragma once
-
-#define WIN32_LEAN_AND_MEAN
-#define NOMINMAX
-
-#define BUFFLEN 512
-
-#include <Windows.h>
-#include <WinSock2.h>
-#include <WS2tcpip.h>
-
 #include <Macros.h>
 
-#pragma comment(lib, "ws2_32.lib")
+// Module declarations
+class Module;
+class ModuleUDP;
+//class ModuleTaskManager;
 
-enum update_status
+enum class update_status
 {
 	UPDATE_CONTINUE,
 	UPDATE_ERROR,
@@ -24,28 +17,33 @@ class Application
 {
 public:
 
+	// Constructor and destructor
+
 	Application();
+
 	~Application();
 
+	// Application lifetime methods
 
-	bool Init();
-	update_status Update();
-	bool CleanUp();
+	bool init();
+
+	update_status update();
+
+	bool cleanUp();
+
 
 public:
 
-	void printWSErrorAndExit(const char* msg);
+	// Modules
+	ModuleUDP* modUDP = nullptr;
+	//ModuleTaskManager* modTaskManager = nullptr;
 
-public:
-	u_short port = 9999;
-	char buffer[BUFFLEN];
 
-	const char* msgToSend = "PONG";
-	const char* destIP = "127.0.0.1";
+private:
 
-	sockaddr_in sourceAddr;
-	sockaddr_in destAddr;
-
-	SOCKET appSocket;
+	// All modules
+	Module* modules[2] = {};
+	int numModules = 0;
 };
 
+extern Application* App;

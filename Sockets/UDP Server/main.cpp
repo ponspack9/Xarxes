@@ -18,7 +18,7 @@ int main(int argc, char** argv)
 	Application* app = new Application();
 
 	int state = MAIN_INIT;
-	int update_return = UPDATE_STOP;
+	update_status update_return = update_status::UPDATE_STOP;
 	int ret = EXIT_FAILURE;
 
 	while (state != MAIN_EXIT) {
@@ -28,7 +28,7 @@ int main(int argc, char** argv)
 
 				printf("Server Initialization --------------\n");
 
-				if (app->Init() == false) {
+				if (app->init() == false) {
 					printf("Server Init exits with ERROR\n");
 					state = MAIN_EXIT;
 				}
@@ -40,7 +40,7 @@ int main(int argc, char** argv)
 
 			case MAIN_UPDATE:
 
-				update_return = app->Update();
+				update_return = app->update();
 
 				if (update_return == update_status::UPDATE_ERROR) {
 					printf("Server Update exits with ERROR\n");
@@ -57,7 +57,7 @@ int main(int argc, char** argv)
 
 				printf("Server Clean up --------------\n");
 
-				if (app->CleanUp() == false) 
+				if (app->cleanUp() == false) 
 					printf("Server Cleaning exits with ERROR\n");
 			
 				else
