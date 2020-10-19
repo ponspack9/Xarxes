@@ -9,6 +9,8 @@
 #include <WinSock2.h>
 #include <WS2tcpip.h>
 
+#include <Macros.h>
+
 #pragma comment(lib, "ws2_32.lib")
 
 enum update_status

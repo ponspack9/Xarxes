@@ -37,7 +37,7 @@ public:
 
 private:
 
-	static const int MAX_THREADS = 2;
+	static const int MAX_THREADS = 4;
 	std::thread threads[MAX_THREADS];
 
 	std::queue<Task*> scheduledTasks;

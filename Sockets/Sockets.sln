@@ -3,9 +3,17 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30204.135
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UDP Client", "UDP Client\UDP Client.vcxproj", "{B877D942-73BD-447B-9A49-38D3FB1236AA}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Client", "UDP Client\UDP Client.vcxproj", "{B877D942-73BD-447B-9A49-38D3FB1236AA}"
+	ProjectSection(ProjectDependencies) = postProject
+		{E1A8BD00-06FA-48B8-BEA4-B6E3429052B3} = {E1A8BD00-06FA-48B8-BEA4-B6E3429052B3}
+	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UDP Server", "UDP Server\UDP Server.vcxproj", "{4171BB7A-E457-4B70-B275-70DF0B57C1FA}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Server", "UDP Server\UDP Server.vcxproj", "{4171BB7A-E457-4B70-B275-70DF0B57C1FA}"
+	ProjectSection(ProjectDependencies) = postProject
+		{E1A8BD00-06FA-48B8-BEA4-B6E3429052B3} = {E1A8BD00-06FA-48B8-BEA4-B6E3429052B3}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Shared", "Shared\Shared.vcxproj", "{E1A8BD00-06FA-48B8-BEA4-B6E3429052B3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -31,6 +39,14 @@ Global
 		{4171BB7A-E457-4B70-B275-70DF0B57C1FA}.Release|x64.Build.0 = Release|x64
 		{4171BB7A-E457-4B70-B275-70DF0B57C1FA}.Release|x86.ActiveCfg = Release|Win32
 		{4171BB7A-E457-4B70-B275-70DF0B57C1FA}.Release|x86.Build.0 = Release|Win32
+		{E1A8BD00-06FA-48B8-BEA4-B6E3429052B3}.Debug|x64.ActiveCfg = Debug|x64
+		{E1A8BD00-06FA-48B8-BEA4-B6E3429052B3}.Debug|x64.Build.0 = Debug|x64
+		{E1A8BD00-06FA-48B8-BEA4-B6E3429052B3}.Debug|x86.ActiveCfg = Debug|Win32
+		{E1A8BD00-06FA-48B8-BEA4-B6E3429052B3}.Debug|x86.Build.0 = Debug|Win32
+		{E1A8BD00-06FA-48B8-BEA4-B6E3429052B3}.Release|x64.ActiveCfg = Release|x64
+		{E1A8BD00-06FA-48B8-BEA4-B6E3429052B3}.Release|x64.Build.0 = Release|x64
+		{E1A8BD00-06FA-48B8-BEA4-B6E3429052B3}.Release|x86.ActiveCfg = Release|Win32
+		{E1A8BD00-06FA-48B8-BEA4-B6E3429052B3}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

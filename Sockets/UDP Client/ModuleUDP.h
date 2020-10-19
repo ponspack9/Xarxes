@@ -9,8 +9,10 @@
 #include <WS2tcpip.h>
 
 #include "Module.h"
+#include <mutex>
 
 #pragma comment(lib, "ws2_32.lib")
+
 
 
 class ModuleUDP : public Module
@@ -23,7 +25,7 @@ public:
 
 	bool init() override;
 
-	update_status pingPong();
+	update_status pingPong(const char* msg);
 
 	void onTaskFinished(Task* task) override;
 
@@ -35,15 +37,22 @@ public:
 
 	void printWSErrorAndExit(const char* msg);
 
-public:
+private:
 	u_short port = 9999;
 	char buffer[BUFFLEN];
 
-	char msgToSend[BUFFLEN] = "PING";
+	//char msgToSend[BUFFLEN] = "PING";
 	const char* destIP = "127.0.0.1";
 
 	sockaddr_in destAddr;
 	SOCKET appSocket;
 
+
+public:
+	// PING PONG EXERCISE
+	int msg_sent = 0;
+	int msg_recieved = 0;
+
+	std::mutex mtx;
 };
 

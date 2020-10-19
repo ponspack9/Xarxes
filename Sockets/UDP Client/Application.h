@@ -1,4 +1,5 @@
 #pragma once
+#include <Macros.h>
 
 // Module declarations
 class Module;

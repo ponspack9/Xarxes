@@ -7,9 +7,12 @@
 
 class TaskNetwork : public Task
 {
+public:
+	char msg[BUFFLEN] = "Null";
+
 	void execute() override
 	{
-		App->modUDP->pingPong();
+		App->modUDP->pingPong(msg);
 	}
 };
 
@@ -50,24 +53,55 @@ bool ModuleUDP::init()
 
 void ModuleUDP::onTaskFinished(Task* task)
 {
-
 }
 update_status ModuleUDP::update()
 {
+#if defined(MESSAGE_APP)
+
+	char buffer[BUFFLEN];
 	printf("Enter a message to send to the server:\n");
-	std::cin.get(msgToSend, BUFFLEN);
-	std::cin.ignore();
+	std::cin.ignore(); // ignore previous entries but misses the very first letter of input :/
+	std::cin.get(buffer, BUFFLEN);
+
+	if (std::cin.fail()) // pressed enter with no actual msg
+	{
+		std::cin.clear();
+		//std::cin.sync();
+		//return update_status::UPDATE_CONTINUE;
+	}
 
 	// Making a task to do network stuff
-	App->modTaskManager->scheduleTask(new TaskNetwork, this);
+	TaskNetwork* task = new TaskNetwork;
+	strcpy_s(task->msg, BUFFLEN, buffer);
+	App->modTaskManager->scheduleTask(task, this)
+
+#elif defined(PING_PONG_EXERCISE)
+	
+	
+	pingPong("PING");
+
+	msg_sent++;
+
+	//std::cout << "SENT: " << msg_sent << std::endl << "RECIEVED: " << msg_recieved << std::endl;
+
+	if (msg_sent >= MSG_TO_SEND) return update_status::UPDATE_STOP;
+
+	Sleep(500);
+
+
+#else 
+	printf("PLEASE UNCOMMENT THE PREPROCESSOR DIRECTIVES INSIDE 'Macros.h'\n");
+	return update_status::UPDATE_STOP;
+
+#endif
 
 	return update_status::UPDATE_CONTINUE;
 }
-update_status ModuleUDP::pingPong()
+update_status ModuleUDP::pingPong(const char* msgToSend)
 {
 
-	if (GetAsyncKeyState(VK_ESCAPE))
-		return update_status::UPDATE_STOP;
+	/*if (GetAsyncKeyState(VK_ESCAPE))
+		return update_status::UPDATE_STOP;*/
 
 	int len = sizeof(destAddr);
 
@@ -91,9 +125,6 @@ update_status ModuleUDP::pingPong()
 	printf("-----------------------------------\n");
 	printf("Recieved confirmation message: '%s'\n", buffer);
 	printf("-----------------------------------\n");
-
-
-	//Sleep(5000);
 
 	return update_status::UPDATE_CONTINUE;
 }
