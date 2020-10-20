@@ -113,6 +113,7 @@ bool Application::CleanUp()
 
 	printf("Cleaning sockets \n");
 	closesocket(appSocket);
+	closesocket(acceptedSocket);
 
 	return true;
 }
