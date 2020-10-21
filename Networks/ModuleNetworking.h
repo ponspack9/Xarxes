@@ -42,7 +42,5 @@ protected:
 	void disconnect();
 
 	static void reportError(const char *message);
-
-	bool is_server = false;
 };
 

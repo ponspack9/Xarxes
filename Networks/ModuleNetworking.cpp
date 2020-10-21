@@ -1,6 +1,5 @@
 #include "Networks.h"
 #include "ModuleNetworking.h"
-#include <list>
 
 static uint8 NumModulesUsingWinsock = 0;
 
@@ -82,8 +81,6 @@ bool ModuleNetworking::preUpdate()
 		return false;
 	}
 
-	std::list<SOCKET> disconnectedSockets;
-
 	for (auto s : sockets)
 	{
 		if (FD_ISSET(s, &readfds))
@@ -106,12 +103,25 @@ bool ModuleNetworking::preUpdate()
 					reportError("Failed 'recv()'");
 					return false;
 				}
+				// Disconected
+				else if (bytes == 0 || bytes == ECONNRESET)
+				{
+					onSocketDisconnected(s);
+					DLOG("Disconnected socket");
+				}
+				else
+				{ 
+					std::string actual_msg = (char*)incomingDataBuffer;
+					actual_msg = actual_msg.substr(0, bytes);
 
-				DLOG("Recieved message '%s'[%d B]\n", incomingDataBuffer, bytes);
-				onSocketReceivedData(s, incomingDataBuffer);
+					DLOG("Recieved message '%s'[%d B]\n", actual_msg.c_str() , bytes);
+					onSocketReceivedData(s, (byte*)actual_msg.c_str());
+				}
 			}
 		}
 	}
+
+	
 	// TODO(jesus): for those sockets selected, check wheter or not they are
 	// a listen socket or a standard socket and perform the corresponding
 	// operation (accept() an incoming connection or recv() incoming data,
