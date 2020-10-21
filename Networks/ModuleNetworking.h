@@ -1,5 +1,7 @@
 #pragma once
 
+#define PORT 9998
+#define SERVER_ADDRESS "127.0.0.1"
 
 class ModuleNetworking : public Module
 {
@@ -40,5 +42,6 @@ protected:
 	void disconnect();
 
 	static void reportError(const char *message);
+
 };
 

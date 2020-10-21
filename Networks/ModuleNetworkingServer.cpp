@@ -9,13 +9,48 @@
 
 bool ModuleNetworkingServer::start(int port)
 {
+	DLOG("Starting server...");
 	// TODO(jesus): TCP listen socket stuff
 	// - Create the listenSocket
+	DLOG("Creating listening socket");
+	listenSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	if (listenSocket == INVALID_SOCKET)
+	{
+		reportError("Error creating appSocket");
+		return false;
+	}
 	// - Set address reuse
-	// - Bind the socket to a local interface
-	// - Enter in listen mode
-	// - Add the listenSocket to the managed list of sockets using addSocket()
+	DLOG("Setting reusable address");
+	int enable = 1;
+	int res = setsockopt(listenSocket, SOL_SOCKET, SO_REUSEADDR, (const char*)&enable, sizeof(int));
+	if (res == SOCKET_ERROR)
+	{
+		reportError("Error forcing reuse of address and port");
+		return false;
+	}
 
+	// - Bind the socket to a local interface
+	DLOG("Binding socket");
+	sockaddr_in sourceAddr;
+	sourceAddr.sin_family = AF_INET; // IPv4 (AF_INET6 -> IPv6)
+	sourceAddr.sin_port = htons(port);
+	sourceAddr.sin_addr.S_un.S_addr = INADDR_ANY;
+
+	res = bind(listenSocket, (const struct sockaddr*)&sourceAddr, sizeof(sourceAddr));
+	if (res == SOCKET_ERROR)
+	{
+		reportError("Error binding port");
+		return false;
+	}
+
+	// - Enter in listen mode
+	DLOG("Entering listening mode");
+	res = listen(listenSocket, 1);
+
+	// - Add the listenSocket to the managed list of sockets using addSocket()
+	addSocket(listenSocket);
+
+	DLOG("Server started successfully");
 	state = ServerState::Listening;
 
 	return true;

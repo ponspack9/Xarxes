@@ -3,10 +3,10 @@
 
 void ScreenMainMenu::enable()
 {
-	LOG("Example Info log entry...");
+	/*LOG("Example Info log entry...");
 	DLOG("Example Debug log entry...");
 	WLOG("Example Warning log entry...");
-	ELOG("Example Error log entry...");
+	ELOG("Example Error log entry...");*/
 }
 
 void ScreenMainMenu::gui()
@@ -21,7 +21,7 @@ void ScreenMainMenu::gui()
 
 	ImGui::Text("Server");
 
-	static int localServerPort = 8888;
+	static int localServerPort = PORT;
 	ImGui::InputInt("Server port", &localServerPort);
 
 	if (ImGui::Button("Start server"))
@@ -40,7 +40,7 @@ void ScreenMainMenu::gui()
 	static char serverAddressStr[64] = "127.0.0.1";
 	ImGui::InputText("Server address", serverAddressStr, sizeof(serverAddressStr));
 
-	static int remoteServerPort = 8888;
+	static int remoteServerPort = PORT;
 	ImGui::InputInt("Server port", &remoteServerPort);
 
 	static char playerNameStr[64] = "playername";
