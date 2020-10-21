@@ -58,6 +58,7 @@ bool ModuleNetworkingClient::update()
 			state = ClientState::Stopped;
 			return false;
 		}
+		DLOG("Sent '%s' to the server", playerName.c_str());
 		state = ClientState::Logging;
 	}
 

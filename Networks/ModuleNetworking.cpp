@@ -1,6 +1,6 @@
 #include "Networks.h"
 #include "ModuleNetworking.h"
-
+#include <list>
 
 static uint8 NumModulesUsingWinsock = 0;
 
@@ -62,7 +62,56 @@ bool ModuleNetworking::preUpdate()
 	byte incomingDataBuffer[incomingDataBufferSize];
 
 	// TODO(jesus): select those sockets that have a read operation available
+	fd_set readfds, writefds;
+	FD_ZERO(&readfds);
+	FD_ZERO(&writefds);
 
+	for (auto s : sockets)
+	{
+		FD_SET(s, &readfds);
+		FD_SET(s, &writefds);
+	}
+	struct timeval timeout;
+	timeout.tv_sec = 0;
+	timeout.tv_usec = 0;
+
+	int res = select(0, &readfds, &writefds, nullptr, &timeout);
+	if (res == SOCKET_ERROR)
+	{
+		reportError("Error in select socket");
+		return false;
+	}
+
+	std::list<SOCKET> disconnectedSockets;
+
+	for (auto s : sockets)
+	{
+		if (FD_ISSET(s, &readfds))
+		{
+			if (isListenSocket(s))
+			{
+				// accept
+				sockaddr_in incomingAddr;
+				int size = sizeof(incomingAddr);
+				SOCKET acceptedSocket = accept(s, (struct sockaddr*)&incomingAddr, &size);
+				onSocketConnected(acceptedSocket, incomingAddr);
+				addSocket(acceptedSocket);
+			}
+			else
+			{
+				// recieve
+				int bytes = recv(s, (char*)incomingDataBuffer, incomingDataBufferSize, 0);
+				if (bytes == SOCKET_ERROR)
+				{
+					reportError("Failed 'recv()'");
+					return false;
+				}
+
+				DLOG("Recieved message '%s'[%d B]\n", incomingDataBuffer, bytes);
+				onSocketReceivedData(s, incomingDataBuffer);
+			}
+		}
+	}
 	// TODO(jesus): for those sockets selected, check wheter or not they are
 	// a listen socket or a standard socket and perform the corresponding
 	// operation (accept() an incoming connection or recv() incoming data,
@@ -72,7 +121,6 @@ bool ModuleNetworking::preUpdate()
 	// connected socket to the managed list of sockets.
 	// On recv() success, communicate the incoming data received to the
 	// subclass (use the callback onSocketReceivedData()).
-
 	// TODO(jesus): handle disconnections. Remember that a socket has been
 	// disconnected from its remote end either when recv() returned 0,
 	// or when it generated some errors such as ECONNRESET.
