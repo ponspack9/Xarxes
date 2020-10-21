@@ -106,8 +106,12 @@ bool ModuleNetworking::preUpdate()
 				// Disconected
 				else if (bytes == 0 || bytes == ECONNRESET)
 				{
-					onSocketDisconnected(s);
-					DLOG("Disconnected socket");
+					if ( strlen((const char*)incomingDataBuffer) > 0)
+					{
+						// FIN packet
+						onSocketDisconnected(s);
+						DLOG("Disconnected socket");
+					}
 				}
 				else
 				{ 

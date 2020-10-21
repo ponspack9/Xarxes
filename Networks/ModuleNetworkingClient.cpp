@@ -91,6 +91,7 @@ void ModuleNetworkingClient::onSocketReceivedData(SOCKET socket, byte * data)
 
 void ModuleNetworkingClient::onSocketDisconnected(SOCKET socket)
 {
+	closesocket(socket);
 	state = ClientState::Stopped;
 }
 

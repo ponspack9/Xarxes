@@ -148,5 +148,16 @@ void ModuleNetworkingServer::onSocketDisconnected(SOCKET socket)
 			break;
 		}
 	}
+
+	// Remove the socket from the main list
+	for (auto it = sockets.begin(); it != sockets.end(); ++it)
+	{
+		auto& connectedSocket = *it;
+		if (connectedSocket == socket)
+		{
+			sockets.erase(it);
+			break;
+		}
+	}
 }
 
