@@ -61,20 +61,20 @@ bool ModuleNetworking::preUpdate()
 	byte incomingDataBuffer[incomingDataBufferSize];
 
 	// TODO(jesus): select those sockets that have a read operation available
-	fd_set readfds, writefds;
+	fd_set readfds;// , writefds;
 	FD_ZERO(&readfds);
-	FD_ZERO(&writefds);
+	//FD_ZERO(&writefds);
 
 	for (auto s : sockets)
 	{
 		FD_SET(s, &readfds);
-		FD_SET(s, &writefds);
+		//FD_SET(s, &writefds);
 	}
 	struct timeval timeout;
 	timeout.tv_sec = 0;
 	timeout.tv_usec = 0;
 
-	int res = select(0, &readfds, &writefds, nullptr, &timeout);
+	int res = select(0, &readfds, nullptr, nullptr, &timeout);
 	if (res == SOCKET_ERROR)
 	{
 		reportError("Error in select socket");
@@ -100,18 +100,25 @@ bool ModuleNetworking::preUpdate()
 				int bytes = recv(s, (char*)incomingDataBuffer, incomingDataBufferSize, 0);
 				if (bytes == SOCKET_ERROR)
 				{
-					reportError("Failed 'recv()'");
-					return false;
+					//reportError("Failed 'recv()'");
+					ELOG("Disconnected socket");
+					onSocketDisconnected(s);
+					closesocket(s);
+					return true;
 				}
 				// Disconected
 				else if (bytes == 0 || bytes == ECONNRESET)
 				{
-					if ( strlen((const char*)incomingDataBuffer) > 0)
-					{
-						// FIN packet
-						onSocketDisconnected(s);
-						DLOG("Disconnected socket");
-					}
+					onSocketDisconnected(s);
+					DLOG("Disconnected socket");
+					//if ( strlen((const char*)incomingDataBuffer) > 0)
+					//{
+					//	// FIN packet
+					//	
+					//	//DLOG("Disconnected socket");
+					//
+					//	//DLOG("Message: %s", incomingDataBuffer);
+					//}
 				}
 				else
 				{ 

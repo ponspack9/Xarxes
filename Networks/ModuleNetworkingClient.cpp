@@ -59,6 +59,7 @@ bool ModuleNetworkingClient::update()
 			return false;
 		}
 		DLOG("Sent '%s' to the server", playerName.c_str());
+		//shutdown(clientSocket, SD_SEND);
 		state = ClientState::Logging;
 	}
 
@@ -91,7 +92,15 @@ void ModuleNetworkingClient::onSocketReceivedData(SOCKET socket, byte * data)
 
 void ModuleNetworkingClient::onSocketDisconnected(SOCKET socket)
 {
+	DLOG("Server disconnected");
 	closesocket(socket);
+
+	for (int i = 0; i < sockets.size(); i++)
+	{
+		if ( sockets[i] == socket)
+			sockets.erase(sockets.begin() + i);
+	}
 	state = ClientState::Stopped;
 }
+
 
