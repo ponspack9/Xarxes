@@ -1,5 +1,6 @@
 #include "ModuleNetworkingClient.h"
 
+// OSCAR PONS GALLART & DAVID TELLO PANEA
 
 bool  ModuleNetworkingClient::start(const char * serverAddressStr, int serverPort, const char *pplayerName)
 {
@@ -59,7 +60,6 @@ bool ModuleNetworkingClient::update()
 			return false;
 		}
 		DLOG("Sent '%s' to the server", playerName.c_str());
-		//shutdown(clientSocket, SD_SEND);
 		state = ClientState::Logging;
 	}
 	

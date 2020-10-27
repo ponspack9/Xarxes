@@ -3,7 +3,7 @@
 
 static uint8 NumModulesUsingWinsock = 0;
 
-
+// OSCAR PONS GALLART & DAVID TELLO PANEA
 
 void ModuleNetworking::reportError(const char* inOperationDesc)
 {
@@ -61,14 +61,12 @@ bool ModuleNetworking::preUpdate()
 	byte incomingDataBuffer[incomingDataBufferSize];
 
 	// TODO(jesus): select those sockets that have a read operation available
-	fd_set readfds;// , writefds;
+	fd_set readfds;
 	FD_ZERO(&readfds);
-	//FD_ZERO(&writefds);
 
 	for (auto s : sockets)
 	{
 		FD_SET(s, &readfds);
-		//FD_SET(s, &writefds);
 	}
 	struct timeval timeout;
 	timeout.tv_sec = 0;
@@ -81,7 +79,6 @@ bool ModuleNetworking::preUpdate()
 		return false;
 	}
 
-	//sprintf_s((char*)incomingDataBuffer, 1024L, "");
 
 	for (auto s : sockets)
 	{
@@ -102,7 +99,6 @@ bool ModuleNetworking::preUpdate()
 				int bytes = recv(s, (char*)incomingDataBuffer, incomingDataBufferSize, 0);
 				if (bytes == SOCKET_ERROR)
 				{
-					//reportError("Failed 'recv()'");
 					DLOG("Socket closed");
 					onSocketDisconnected(s);
 					closesocket(s);
