@@ -81,6 +81,8 @@ bool ModuleNetworking::preUpdate()
 		return false;
 	}
 
+	//sprintf_s((char*)incomingDataBuffer, 1024L, "");
+
 	for (auto s : sockets)
 	{
 		if (FD_ISSET(s, &readfds))
@@ -101,7 +103,7 @@ bool ModuleNetworking::preUpdate()
 				if (bytes == SOCKET_ERROR)
 				{
 					//reportError("Failed 'recv()'");
-					ELOG("Disconnected socket");
+					DLOG("Socket closed");
 					onSocketDisconnected(s);
 					closesocket(s);
 					return true;
@@ -109,16 +111,13 @@ bool ModuleNetworking::preUpdate()
 				// Disconected
 				else if (bytes == 0 || bytes == ECONNRESET)
 				{
-					onSocketDisconnected(s);
-					DLOG("Disconnected socket");
-					//if ( strlen((const char*)incomingDataBuffer) > 0)
-					//{
-					//	// FIN packet
-					//	
-					//	//DLOG("Disconnected socket");
-					//
-					//	//DLOG("Message: %s", incomingDataBuffer);
-					//}
+					if ( strlen((const char*)incomingDataBuffer) > 0)
+					{
+						// FIN packet
+						onSocketDisconnected(s);
+						shutdown(s, SD_BOTH);
+						DLOG("Socket shutdown");
+					}
 				}
 				else
 				{ 

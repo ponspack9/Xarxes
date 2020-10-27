@@ -62,6 +62,7 @@ bool ModuleNetworkingClient::update()
 		//shutdown(clientSocket, SD_SEND);
 		state = ClientState::Logging;
 	}
+	
 
 	return true;
 }
@@ -79,6 +80,11 @@ bool ModuleNetworkingClient::gui()
 
 		ImGui::Text("%s connected to the server...", playerName.c_str());
 
+		if (ImGui::Button("Log out"))
+		{
+			DLOG("Logging out");
+			shutdown(clientSocket, SD_SEND);
+		}
 		ImGui::End();
 	}
 
@@ -92,7 +98,6 @@ void ModuleNetworkingClient::onSocketReceivedData(SOCKET socket, byte * data)
 
 void ModuleNetworkingClient::onSocketDisconnected(SOCKET socket)
 {
-	DLOG("Server disconnected");
 	closesocket(socket);
 
 	for (int i = 0; i < sockets.size(); i++)
@@ -101,6 +106,7 @@ void ModuleNetworkingClient::onSocketDisconnected(SOCKET socket)
 			sockets.erase(sockets.begin() + i);
 	}
 	state = ClientState::Stopped;
+	DLOG("Server disconnected");
 }
 
 

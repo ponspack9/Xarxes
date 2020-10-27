@@ -159,5 +159,7 @@ void ModuleNetworkingServer::onSocketDisconnected(SOCKET socket)
 			break;
 		}
 	}
+
+	DLOG("Client logged out");
 }
 
