@@ -1,6 +1,6 @@
 #pragma once
 
-#pragma comment(lib, "Ws2_32.lib")
+#pragma comment(lib, "ws2_32.lib")
 
 #pragma comment (lib, "D3D11.lib")
 
@@ -184,6 +184,8 @@ inline float fractionalPart(float number)
 ////////////////////////////////////////////////////////////////////////
 // FRAMEWORK HEADERS
 ////////////////////////////////////////////////////////////////////////
+#include "Messages.h"
+#include "MemoryStream.h"
 
 #include "Module.h"
 #include "ModuleNetworking.h"

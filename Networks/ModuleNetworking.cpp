@@ -30,7 +30,6 @@ void ModuleNetworking::disconnect()
 		shutdown(socket, 2);
 		closesocket(socket);
 	}
-
 	sockets.clear();
 }
 
@@ -48,22 +47,16 @@ bool ModuleNetworking::init()
 			return false;
 		}
 	}
-
 	return true;
 }
 
 bool ModuleNetworking::preUpdate()
 {
-	if (sockets.empty()) return true;
+	if (sockets.empty()) 
+		return true;
 
-	// NOTE(jesus): You can use this temporary buffer to store data from recv()
-	const uint32 incomingDataBufferSize = Kilobytes(1);
-	byte incomingDataBuffer[incomingDataBufferSize];
-
-	// TODO(jesus): select those sockets that have a read operation available
 	fd_set readfds;
 	FD_ZERO(&readfds);
-
 	for (auto s : sockets)
 	{
 		FD_SET(s, &readfds);
@@ -79,14 +72,13 @@ bool ModuleNetworking::preUpdate()
 		return false;
 	}
 
-
+	InputMemoryStream packet;
 	for (auto s : sockets)
 	{
 		if (FD_ISSET(s, &readfds))
 		{
-			if (isListenSocket(s))
+			if (isListenSocket(s)) // Accept
 			{
-				// accept
 				sockaddr_in incomingAddr;
 				int size = sizeof(incomingAddr);
 				SOCKET acceptedSocket = accept(s, (struct sockaddr*)&incomingAddr, &size);
@@ -95,57 +87,29 @@ bool ModuleNetworking::preUpdate()
 			}
 			else
 			{
-				// recieve
-				int bytes = recv(s, (char*)incomingDataBuffer, incomingDataBufferSize, 0);
+				int bytes = recv(s, packet.GetBufferPtr(), packet.GetCapacity(), 0); // Receive
 				if (bytes == SOCKET_ERROR)
 				{
-					DLOG("Socket closed");
 					onSocketDisconnected(s);
 					closesocket(s);
 					return true;
 				}
-				// Disconected
-				else if (bytes == 0 || bytes == ECONNRESET)
+				else if (bytes == 0 || bytes == ECONNRESET) // Disconected
 				{
-					if ( strlen((const char*)incomingDataBuffer) > 0)
+					if (strlen(packet.GetBufferPtr()) > 0) // FIN packet
 					{
-						// FIN packet
 						onSocketDisconnected(s);
 						shutdown(s, SD_BOTH);
-						DLOG("Socket shutdown");
 					}
 				}
 				else
 				{ 
-					std::string actual_msg = (char*)incomingDataBuffer;
-					actual_msg = actual_msg.substr(0, bytes);
-
-					DLOG("Recieved message '%s'[%d B]\n", actual_msg.c_str() , bytes);
-					onSocketReceivedData(s, (byte*)actual_msg.c_str());
+					packet.SetSize((uint32)bytes);
+					onSocketReceivedData(s, packet);
 				}
 			}
 		}
 	}
-
-	
-	// TODO(jesus): for those sockets selected, check wheter or not they are
-	// a listen socket or a standard socket and perform the corresponding
-	// operation (accept() an incoming connection or recv() incoming data,
-	// respectively).
-	// On accept() success, communicate the new connected socket to the
-	// subclass (use the callback onSocketConnected()), and add the new
-	// connected socket to the managed list of sockets.
-	// On recv() success, communicate the incoming data received to the
-	// subclass (use the callback onSocketReceivedData()).
-	// TODO(jesus): handle disconnections. Remember that a socket has been
-	// disconnected from its remote end either when recv() returned 0,
-	// or when it generated some errors such as ECONNRESET.
-	// Communicate detected disconnections to the subclass using the callback
-	// onSocketDisconnected().
-
-	// TODO(jesus): Finally, remove all disconnected sockets from the list
-	// of managed sockets.
-
 	return true;
 }
 
@@ -156,18 +120,26 @@ bool ModuleNetworking::cleanUp()
 	NumModulesUsingWinsock--;
 	if (NumModulesUsingWinsock == 0)
 	{
-
 		if (WSACleanup() != 0)
 		{
 			reportError("ModuleNetworking::cleanUp() - WSACleanup");
 			return false;
 		}
 	}
-
 	return true;
 }
 
 void ModuleNetworking::addSocket(SOCKET socket)
 {
 	sockets.push_back(socket);
+}
+
+bool ModuleNetworking::sendPacket(const OutputMemoryStream& packet, SOCKET socket)
+{
+	if (send(socket, packet.GetBufferPtr(), packet.GetSize(), 0) == SOCKET_ERROR)
+	{
+		reportError("Error sending packet: ");
+		return false;
+	}
+	return true;
 }

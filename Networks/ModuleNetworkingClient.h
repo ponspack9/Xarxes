@@ -32,7 +32,7 @@ private:
 	// ModuleNetworking virtual methods
 	//////////////////////////////////////////////////////////////////////
 
-	void onSocketReceivedData(SOCKET socket, byte * data) override;
+	void onSocketReceivedData(SOCKET socket, const InputMemoryStream& packet) override;
 
 	void onSocketDisconnected(SOCKET socket) override;
 
@@ -46,7 +46,8 @@ private:
 	{
 		Stopped,
 		Start,
-		Logging
+		Logging,
+		Connected
 	};
 
 	ClientState state = ClientState::Stopped;

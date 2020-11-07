@@ -1,6 +1,6 @@
 #pragma once
 
-#define PORT 9998
+#define PORT 8888
 #define SERVER_ADDRESS "127.0.0.1"
 
 class ModuleNetworking : public Module
@@ -27,11 +27,12 @@ private:
 
 	virtual void onSocketConnected(SOCKET socket, const sockaddr_in &socketAddress) { }
 
-	virtual void onSocketReceivedData(SOCKET s, byte * data) = 0;
+	virtual void onSocketReceivedData(SOCKET s, const InputMemoryStream &packet) = 0;
 
 	virtual void onSocketDisconnected(SOCKET s) = 0;
 
-
+protected:
+	bool sendPacket(const OutputMemoryStream& packet, SOCKET socket);
 
 protected:
 
