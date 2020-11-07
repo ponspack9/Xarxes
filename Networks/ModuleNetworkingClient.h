@@ -56,5 +56,14 @@ private:
 	SOCKET clientSocket = INVALID_SOCKET;
 
 	std::string playerName;
+
+	std::vector<std::pair<std::string, ImVec4>> messages_list;
+
+	const ImVec4 white = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
+	const ImVec4 red = ImVec4(1.0f, 0.0f, 0.0f, 1.0f);
+	const ImVec4 green = ImVec4(0.0f, 1.0f, 0.0f, 1.0f);
+	const ImVec4 blue = ImVec4(0.0f, 0.0f, 1.0f, 1.0f);
+	const ImVec4 yellow = ImVec4(1.0f, 1.0f, 0.0f, 1.0f);
+	ImVec4 color = white;
 };
 

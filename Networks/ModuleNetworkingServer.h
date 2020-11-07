@@ -61,8 +61,13 @@ private:
 		sockaddr_in address;
 		SOCKET socket;
 		std::string playerName;
+
+		std::vector<std::string> blockList;
+		std::vector<std::string> muteList;
 	};
 
 	std::vector<ConnectedSocket> connectedSockets;
+
+	std::vector<std::string> banList;
 };
 

@@ -46,6 +46,18 @@ void ScreenMainMenu::gui()
 	static char playerNameStr[64] = "playername";
 	ImGui::InputText("Player name", playerNameStr, sizeof(playerNameStr));
 
+	if (ImGui::IsItemClicked())
+		name_used = name_banned = banned = kicked = false;
+
+	if (name_used)
+		ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Name already in use");
+	else if (name_banned)
+		ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Name is banned");
+	else if (banned)
+		ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "You were banned from server");
+	else if (kicked)
+		ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "You were kicked from server");
+
 	if (ImGui::Button("Connect to server"))
 	{
 		App->modScreen->screenGame->isServer = false;

@@ -5,11 +5,53 @@
 
 enum class ClientMessage
 {
-	Hello
+	Hello,
+	Message,
+	Help,
+	List,
+	MuteList,
+	BlockList,
+	BanList,
+	ChangeName,
+	Whisper,
+	Block,
+	Unblock,
+	Kick,
+	Ban,
+	Unban,
+	Mute,
+	Unmute,
+	MuteAll,
+	UnmuteAll,
+	ErrorCommand
 };
 
 enum class ServerMessage
 {
-	Welcome
+	Welcome,
+	UnableBan,
+	UnableName,
+	UserBanned,
+	UserKicked,
+	UserConnected,
+	UserDisconnected,
+	Message,
+	Help,
+	List,
+	MuteList,
+	BlockList,
+	BanList,
+	ChangeName,
+	Whisper,
+	Block,
+	Unblock,
+	Kick,
+	Ban,
+	Unban,
+	Mute,
+	Unmute,
+	MuteAll,
+	UnmuteAll,
+	ErrorCommand
 };
 
