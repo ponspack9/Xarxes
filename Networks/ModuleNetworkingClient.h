@@ -77,7 +77,7 @@ private:
 	const ImVec4 white = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
 	const ImVec4 red = ImVec4(1.0f, 0.0f, 0.0f, 1.0f);
 	const ImVec4 green = ImVec4(0.0f, 1.0f, 0.0f, 1.0f);
-	const ImVec4 blue = ImVec4(0.0f, 0.0f, 1.0f, 1.0f);
+	const ImVec4 blue = ImVec4(0.25f, 0.75f, 1.0f, 1.0f);
 	const ImVec4 yellow = ImVec4(1.0f, 1.0f, 0.0f, 1.0f);
 	ImVec4 color = white;
 
