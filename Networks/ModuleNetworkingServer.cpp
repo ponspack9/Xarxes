@@ -212,7 +212,6 @@ void ModuleNetworkingServer::onSocketReceivedData(SOCKET socket, const InputMemo
 						new_packet.Clear();
 						new_packet << ServerMessage::UserConnected;
 						new_packet << message;
-
 						sendPacket(new_packet, connectedSocket.socket);
 					}
 				}
@@ -272,6 +271,7 @@ void ModuleNetworkingServer::onSocketReceivedData(SOCKET socket, const InputMemo
 		message = "*** List of Commands ***\n"
 			"/help\n"
 			"/list\n"
+			"/listwindow\n"
 			"/mutelist\n"
 			"/blocklist\n"
 			"/banlist\n"
@@ -308,6 +308,24 @@ void ModuleNetworkingServer::onSocketReceivedData(SOCKET socket, const InputMemo
 
 		new_packet << ServerMessage::List;
 		new_packet << message;
+
+		for (auto& connectedSocket : connectedSockets)
+		{
+			if (connectedSocket.socket == socket)
+			{
+				sendPacket(new_packet, connectedSocket.socket);
+				break;
+			}
+		}
+	}
+	else if (clientMessage == ClientMessage::ListWindow) // List Window
+	{
+		for (auto& connectedSocket : connectedSockets)
+			message.append(connectedSocket.playerName + "\n");
+		new_packet << ServerMessage::ListWindow;
+		new_packet << message;
+		int size = connectedSockets.size();
+		new_packet << size;
 
 		for (auto& connectedSocket : connectedSockets)
 		{
@@ -428,6 +446,7 @@ void ModuleNetworkingServer::onSocketReceivedData(SOCKET socket, const InputMemo
 			{
 				message = "*** Name changed to '" + playerName + "' ***";
 				new_packet << ServerMessage::ChangeName;
+				new_packet << playerName;
 			}
 		}
 
@@ -440,12 +459,101 @@ void ModuleNetworkingServer::onSocketReceivedData(SOCKET socket, const InputMemo
 
 				if (!exists && !banned)
 					connectedSocket.playerName = playerName;
-				break;
 			}
+		}
+
+		for (auto& connectedSocket : connectedSockets)
+		{
+			new_packet.Clear();
+			message = "";
+			for (auto& connectedSocket : connectedSockets)
+				message.append(connectedSocket.playerName + "\n");
+			new_packet << ServerMessage::ListWindow;
+			new_packet << message;
+			int size = connectedSockets.size();
+			new_packet << size;
+
+			sendPacket(new_packet, connectedSocket.socket);
 		}
 	}
 	else if (clientMessage == ClientMessage::Whisper) // Whisper
 	{
+		std::string senderName;
+		std::string receiverName;
+		std::string message;
+		packet >> receiverName;
+		receiverName = receiverName.substr(0, receiverName.find_first_of(" "));
+		packet >> message;
+
+		bool error = true;
+		bool able = true;
+		for (auto& connectedSocket : connectedSockets)
+		{
+			if (connectedSocket.playerName == receiverName)
+			{
+				error = false;
+
+				for (auto& blocked : connectedSocket.blockList)
+				{
+					for (auto& connectedSocket : connectedSockets)
+					{
+						if (blocked == connectedSocket.playerName)
+						{
+							able = false;
+							break;
+						}
+					}
+				}
+				break;
+			}
+		}
+		for (auto& connectedSocket : connectedSockets)
+		{
+			if (connectedSocket.socket == socket)
+			{
+				if (error)
+				{
+					message = "'" + receiverName + "'" + " is not connected";
+					new_packet << ServerMessage::ErrorCommand;
+					new_packet << message;
+					sendPacket(new_packet, connectedSocket.socket);
+					break;
+				}
+				else if (!able)
+				{
+					message = "'" + receiverName + "'" + " doesn't allow whispers";
+					new_packet << ServerMessage::ErrorCommand;
+					new_packet << message;
+					sendPacket(new_packet, connectedSocket.socket);
+					break;
+				}
+				else
+				{
+					senderName = connectedSocket.playerName;
+					message = senderName + ": " + message;
+					new_packet << ServerMessage::Whisper;
+					new_packet << message;
+					new_packet << receiverName;
+					sendPacket(new_packet, connectedSocket.socket);
+					break;
+				}
+			}
+		}
+		if (!error && able)
+		{
+			for (auto& connectedSocket : connectedSockets)
+			{
+				if (connectedSocket.playerName == receiverName)
+				{
+					new_packet.Clear();
+					new_packet << ServerMessage::Whisper;
+					new_packet << message;
+					new_packet << senderName;
+					sendPacket(new_packet, connectedSocket.socket);
+					break;
+				}
+			}
+		}
 	}
 	else if (clientMessage == ClientMessage::Block) // Block
 	{
