@@ -6,7 +6,7 @@ GAME NAME is a 2 player online game made with C++ by Oscar Pons and David Tello,
 
 
 ## Features
-**feature, author, degree of completeness (tried but not achieved/achieved with some known bugs/completely achieved), result accomplished & known bugs/issues
+**feature, author, degree of completeness (tried but not achieved/achieved with some known bugs/completely achieved), result accomplished & known bugs/issues**
 
 * [ ] Accept 2 players
 * [ ] Handle join/leave events
