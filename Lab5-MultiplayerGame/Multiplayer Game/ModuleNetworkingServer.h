@@ -47,10 +47,11 @@ private:
 		bool connected = false;
 		sockaddr_in address;
 		uint32 clientId;
-		std::string name;
+		std::string name = "Player1";
 		GameObject *gameObject = nullptr;
 
 		// TODO(you): UDP virtual connection lab session
+		real64 timeLastPing = 0;
 		// TODO(you): World state replication lab session
 		// TODO(you): Reliability on top of UDP lab session
 

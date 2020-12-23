@@ -162,8 +162,16 @@ void ModuleNetworkingClient::onUpdate()
 	}
 	else if (state == ClientState::Connected)
 	{
-		// TODO(you): UDP virtual connection lab session
-
+		// TODO(you): UDP virtual connection lab session DONE
+		timeLastPingSent += Time.deltaTime;
+		if (timeLastPingSent >= PING_INTERVAL_SECONDS)
+		{
+			OutputMemoryStream packet;
+			packet << PROTOCOL_ID;
+			packet << ClientMessage::Ping;
+			sendPacket(packet, serverAddress);
+			timeLastPingSent = 0;
+		}
 		// Process more inputs if there's space
 		if (inputDataBack - inputDataFront < ArrayCount(inputData))
 		{
