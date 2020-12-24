@@ -85,8 +85,8 @@ private:
 	//////////////////////////////////////////////////////////////////////
 
 	// TODO(you): UDP virtual connection lab session DONE
-	real64 timeLastPingSent = 0;
-
+	real32 secondsSinceLastPingSent = 0;
+	real32 secondsSinceLastPingRecieved = 0;
 
 	//////////////////////////////////////////////////////////////////////
 	// Replication

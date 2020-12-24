@@ -50,8 +50,8 @@ private:
 		std::string name = "Player1";
 		GameObject *gameObject = nullptr;
 
-		// TODO(you): UDP virtual connection lab session
-		real64 timeLastPing = 0;
+		// TODO(you): UDP virtual connection lab session DONE
+		real32 secondsSinceLastPingRecieved = 0;
 		// TODO(you): World state replication lab session
 		// TODO(you): Reliability on top of UDP lab session
 
@@ -120,9 +120,8 @@ private:
 
 	uint16 listenPort = 0;
 
-
-
-	// TODO(you): UDP virtual connection lab session
+	// TODO(you): UDP virtual connection lab session DONE
+	real32 secondsSinceLastPingSent = 0;
 
 };
 

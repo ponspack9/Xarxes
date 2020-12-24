@@ -102,7 +102,6 @@ void ModuleNetworkingClient::onGui()
 
 void ModuleNetworkingClient::onPacketReceived(const InputMemoryStream &packet, const sockaddr_in &fromAddress)
 {
-	// TODO(you): UDP virtual connection lab session
 
 	uint32 protoId;
 	packet >> protoId;
@@ -129,6 +128,11 @@ void ModuleNetworkingClient::onPacketReceived(const InputMemoryStream &packet, c
 	}
 	else if (state == ClientState::Connected)
 	{
+		// TODO(you): UDP virtual connection lab session DONE
+		if (message == ServerMessage::Ping)
+		{
+			secondsSinceLastPingRecieved = 0;
+		}
 		// TODO(you): World state replication lab session
 
 		// TODO(you): Reliability on top of UDP lab session
@@ -138,10 +142,6 @@ void ModuleNetworkingClient::onPacketReceived(const InputMemoryStream &packet, c
 void ModuleNetworkingClient::onUpdate()
 {
 	if (state == ClientState::Stopped) return;
-
-
-	// TODO(you): UDP virtual connection lab session
-
 
 	if (state == ClientState::Connecting)
 	{
@@ -163,15 +163,26 @@ void ModuleNetworkingClient::onUpdate()
 	else if (state == ClientState::Connected)
 	{
 		// TODO(you): UDP virtual connection lab session DONE
-		timeLastPingSent += Time.deltaTime;
-		if (timeLastPingSent >= PING_INTERVAL_SECONDS)
+		// Letting know the server, client is alive
+		secondsSinceLastPingSent += Time.deltaTime;
+		if (secondsSinceLastPingSent >= PING_INTERVAL_SECONDS)
 		{
 			OutputMemoryStream packet;
 			packet << PROTOCOL_ID;
 			packet << ClientMessage::Ping;
 			sendPacket(packet, serverAddress);
-			timeLastPingSent = 0;
+			secondsSinceLastPingSent = 0;
 		}
+		//Checking if the server is alive
+		secondsSinceLastPingRecieved += Time.deltaTime;
+		if (secondsSinceLastPingRecieved >= DISCONNECT_TIMEOUT_SECONDS)
+		{
+			ELOG("Unable to get a response from the server, disconnecting");
+			disconnect();
+			secondsSinceLastPingRecieved = 0;
+			return; // necessary?
+		}
+
 		// Process more inputs if there's space
 		if (inputDataBack - inputDataFront < ArrayCount(inputData))
 		{
