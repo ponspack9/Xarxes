@@ -192,7 +192,7 @@ void ModuleNetworkingServer::onPacketReceived(const InputMemoryStream &packet, c
 		{
 			if (proxy != nullptr)
 			{
-				proxy->timeLastPing = 0;
+				proxy->secondsSinceLastPingRecieved = 0;
 
 			}
 		}
@@ -224,9 +224,9 @@ void ModuleNetworkingServer::onUpdate()
 		{
 			if (clientProxy.connected)
 			{
-				clientProxy.timeLastPing += Time.deltaTime;
+				clientProxy.secondsSinceLastPingRecieved += Time.deltaTime;
 				// TODO(you): UDP virtual connection lab session DONE
-				if (clientProxy.timeLastPing >= DISCONNECT_TIMEOUT_SECONDS)
+				if (clientProxy.secondsSinceLastPingRecieved >= DISCONNECT_TIMEOUT_SECONDS)
 				{
 					LOG("Player %s is AFK or disconnected", clientProxy.name.c_str());
 					destroyClientProxy(&clientProxy);
