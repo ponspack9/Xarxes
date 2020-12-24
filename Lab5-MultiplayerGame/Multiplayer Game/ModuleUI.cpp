@@ -12,8 +12,15 @@ bool ModuleUI::init()
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 
-	//ImGuiIO& io = ImGui::GetIO(); (void)io;
+	// Viewports & docking
+	ImGuiIO& io = ImGui::GetIO(); (void)io;
+	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
+	io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows
 	//io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
+	// When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look identical to regular ones.
+	ImGuiStyle& style = ImGui::GetStyle();
+	style.WindowRounding = 0.0f;
+	style.Colors[ImGuiCol_WindowBg].w = 1.0f;
 
 	// Setup style
 	ImGui::StyleColorsDark();
@@ -32,6 +39,8 @@ bool ModuleUI::preUpdate()
 	ImGui_ImplDX11_NewFrame();
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
+	DockSpace();
+
 	return true;
 }
 
@@ -100,6 +109,9 @@ bool ModuleUI::gui()
 
 bool ModuleUI::postUpdate()
 {
+	// Docking end
+	ImGui::End();
+
 	ImGui::EndFrame();
 	ImGui::Render();
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
@@ -130,4 +142,31 @@ LRESULT ModuleUI::HandleWindowsEvents(UINT msg, WPARAM wParam, LPARAM lParam)
 	}
 
 	return ERROR_SUCCESS;
+}
+
+void ModuleUI::DockSpace() const
+{
+	// --- Adapt to Window changes like resizing ---
+	ImGuiViewport* viewport = ImGui::GetMainViewport();
+	ImGui::SetNextWindowPos(viewport->Pos);
+	ImGui::SetNextWindowSize(viewport->Size);
+	ImGui::SetNextWindowViewport(viewport->ID);
+	ImGui::SetNextWindowBgAlpha(0.0f);
+
+	static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_PassthruCentralNode;
+
+	ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDocking;
+	window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+	window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoBackground;
+
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 1.0f);
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 1.0f);
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(1.0f, 1.0f));
+
+	static bool p_open = true;
+	ImGui::Begin("DockSpace Demo", &p_open, window_flags);
+	ImGui::PopStyleVar(3);
+
+	ImGuiID dockspace_id = ImGui::GetID("MyDockspace");
+	ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
 }

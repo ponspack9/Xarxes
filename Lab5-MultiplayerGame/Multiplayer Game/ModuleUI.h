@@ -23,5 +23,7 @@ public:
 
 	LRESULT HandleWindowsEvents(UINT msg, WPARAM wParam, LPARAM lParam);
 
+	void DockSpace() const;
+
 	bool inputsEnabled = true;
 };
