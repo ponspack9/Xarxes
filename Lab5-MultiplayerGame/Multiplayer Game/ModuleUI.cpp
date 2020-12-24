@@ -65,7 +65,7 @@ bool ModuleUI::gui()
 				}
 			}
 
-			//ImGui::SetScrollHere(1.0f);
+			ImGui::SetScrollHere(1.0f);
 
 			ImGui::EndTabItem();
 		}
