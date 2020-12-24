@@ -187,7 +187,7 @@ void ModuleNetworkingServer::onPacketReceived(const InputMemoryStream &packet, c
 				}
 			}
 		}
-		// TODO(you): UDP virtual connection lab session DONE
+		// TODO(Oscar): UDP virtual connection lab session DONE
 		else if (message == ClientMessage::Ping)
 		{
 			if (proxy != nullptr)
@@ -219,7 +219,8 @@ void ModuleNetworkingServer::onUpdate()
 				}
 			}
 		}
-
+		bool resetSecondsSinceLastPingSent = false;
+		secondsSinceLastPingSent += Time.deltaTime;
 		for (ClientProxy &clientProxy : clientProxies)
 		{
 			if (clientProxy.connected)
@@ -228,8 +229,19 @@ void ModuleNetworkingServer::onUpdate()
 				// TODO(you): UDP virtual connection lab session DONE
 				if (clientProxy.secondsSinceLastPingRecieved >= DISCONNECT_TIMEOUT_SECONDS)
 				{
-					LOG("Player %s is AFK or disconnected", clientProxy.name.c_str());
+					LOG("Player %s has disconnected", clientProxy.name.c_str());
 					destroyClientProxy(&clientProxy);
+				}
+
+				//Letting know clients server's alive
+				if (secondsSinceLastPingSent > PING_INTERVAL_SECONDS)
+				{
+					OutputMemoryStream packet;
+					packet << PROTOCOL_ID;
+					packet << ServerMessage::Ping;
+					sendPacket(packet, clientProxy.address);
+					resetSecondsSinceLastPingSent = true;
+					DLOG("Ping sent to %s %s:% d", clientProxy.name.c_str(), clientProxy.address,ntohs(clientProxy.address.sin_port));
 				}
 				// Don't let the client proxy point to a destroyed game object
 				if (!IsValid(clientProxy.gameObject))
@@ -242,6 +254,8 @@ void ModuleNetworkingServer::onUpdate()
 				// TODO(you): Reliability on top of UDP lab session
 			}
 		}
+		if (resetSecondsSinceLastPingSent)
+			secondsSinceLastPingSent = 0;
 	}
 }
 

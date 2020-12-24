@@ -84,9 +84,9 @@ private:
 	// Virtual connection
 	//////////////////////////////////////////////////////////////////////
 
-	// TODO(you): UDP virtual connection lab session DONE
-	real64 secondsSinceLastPingSent = 0;
-
+	// TODO(Oscar): UDP virtual connection
+	real32 secondsSinceLastPingSent = 0;
+	real32 secondsSinceLastPingRecieved = 0;
 
 	//////////////////////////////////////////////////////////////////////
 	// Replication
