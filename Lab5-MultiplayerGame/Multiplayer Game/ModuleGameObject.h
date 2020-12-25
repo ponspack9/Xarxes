@@ -38,6 +38,20 @@ struct GameObject
 	};
 	State state = NON_EXISTING;
 
+	void Serialize(OutputMemoryStream& packet) const 
+	{
+		packet << position.x;
+		packet << position.y;
+		packet << size.x;
+		packet << size.y;
+		packet << angle;
+
+		// sprite, animation...
+
+		packet << int(state);
+	}
+	
+
 private:
 
 	void * operator new(size_t size) = delete;

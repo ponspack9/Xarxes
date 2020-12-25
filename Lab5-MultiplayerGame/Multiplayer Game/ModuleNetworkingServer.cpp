@@ -187,7 +187,7 @@ void ModuleNetworkingServer::onPacketReceived(const InputMemoryStream &packet, c
 				}
 			}
 		}
-		// TODO(Oscar): UDP virtual connection lab session DONE
+		// TODO(Oscar): UDP virtual connection 
 		else if (message == ClientMessage::Ping)
 		{
 			if (proxy != nullptr)
@@ -196,8 +196,6 @@ void ModuleNetworkingServer::onPacketReceived(const InputMemoryStream &packet, c
 
 			}
 		}
-		
-		
 
 	}
 }
@@ -226,7 +224,7 @@ void ModuleNetworkingServer::onUpdate()
 			if (clientProxy.connected)
 			{
 				clientProxy.secondsSinceLastPingRecieved += Time.deltaTime;
-				// TODO(you): UDP virtual connection lab session DONE
+				// TODO(Oscar): UDP virtual connection
 				if (clientProxy.secondsSinceLastPingRecieved >= DISCONNECT_TIMEOUT_SECONDS)
 				{
 					LOG("Player %s has disconnected", clientProxy.name.c_str());
