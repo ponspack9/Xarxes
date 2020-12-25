@@ -145,7 +145,8 @@ void ModuleNetworkingServer::onPacketReceived(const InputMemoryStream &packet, c
 				{
 					GameObject *gameObject = networkGameObjects[i];
 					
-					// TODO(you): World state replication lab session
+					// TODO(Oscar): World state replication lab session
+					proxy->replicationManagerServer.create(gameObject->networkId);
 				}
 
 				LOG("Message received: hello - from player %s", proxy->name.c_str());
@@ -223,8 +224,8 @@ void ModuleNetworkingServer::onUpdate()
 		{
 			if (clientProxy.connected)
 			{
-				clientProxy.secondsSinceLastPingRecieved += Time.deltaTime;
 				// TODO(Oscar): UDP virtual connection
+				clientProxy.secondsSinceLastPingRecieved += Time.deltaTime;
 				if (clientProxy.secondsSinceLastPingRecieved >= DISCONNECT_TIMEOUT_SECONDS)
 				{
 					LOG("Player %s has disconnected", clientProxy.name.c_str());
@@ -239,15 +240,20 @@ void ModuleNetworkingServer::onUpdate()
 					packet << ServerMessage::Ping;
 					sendPacket(packet, clientProxy.address);
 					resetSecondsSinceLastPingSent = true;
-					DLOG("Ping sent to %s %s:% d", clientProxy.name.c_str(), clientProxy.address,ntohs(clientProxy.address.sin_port));
+					//DLOG("Ping sent to %s %s:% d", clientProxy.name.c_str(), clientProxy.address,ntohs(clientProxy.address.sin_port));
 				}
 				// Don't let the client proxy point to a destroyed game object
 				if (!IsValid(clientProxy.gameObject))
 				{
 					clientProxy.gameObject = nullptr;
 				}
+				// END UDP virtual connection
 
-				// TODO(you): World state replication lab session
+				// TODO(Oscar): World state replication
+				// TODO(Oscar): World state replication -> use intervals to send info
+				OutputMemoryStream packet;
+				clientProxy.replicationManagerServer.write(packet);
+				sendPacket(packet, clientProxy.address);
 
 				// TODO(you): Reliability on top of UDP lab session
 			}
@@ -391,7 +397,8 @@ GameObject * ModuleNetworkingServer::instantiateNetworkObject()
 	{
 		if (clientProxies[i].connected)
 		{
-			// TODO(you): World state replication lab session
+			// TODO(Oscar): World state replication lab session
+			clientProxies[i].replicationManagerServer.create(gameObject->networkId);
 		}
 	}
 
@@ -405,7 +412,8 @@ void ModuleNetworkingServer::updateNetworkObject(GameObject * gameObject)
 	{
 		if (clientProxies[i].connected)
 		{
-			// TODO(you): World state replication lab session
+			// TODO(Oscar): World state replication lab session
+			clientProxies[i].replicationManagerServer.update(gameObject->networkId);
 		}
 	}
 }
@@ -417,7 +425,8 @@ void ModuleNetworkingServer::destroyNetworkObject(GameObject * gameObject)
 	{
 		if (clientProxies[i].connected)
 		{
-			// TODO(you): World state replication lab session
+			// TODO(Oscar): World state replication lab session
+			clientProxies[i].replicationManagerServer.destroy(gameObject->networkId);
 		}
 	}
 

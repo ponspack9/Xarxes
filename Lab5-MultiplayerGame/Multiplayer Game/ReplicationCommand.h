@@ -16,4 +16,9 @@ struct ReplicationCommand
 {
 	uint32 networkId;
 	ReplicationAction action;
+
+	ReplicationCommand() {
+		networkId = 0;
+		action = ReplicationAction::None;
+	}
 };

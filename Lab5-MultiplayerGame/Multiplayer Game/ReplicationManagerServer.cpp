@@ -6,20 +6,26 @@
 
 void ReplicationManagerServer::create(uint32 networkId)
 {
-	ASSERT(networkId < MAX_NETWORK_OBJECTS);
-	savedActions[networkId] = ReplicationAction::Create;
+	uint16 arrayIndex = networkId & 0xffff;
+	ASSERT(arrayIndex < MAX_NETWORK_OBJECTS);
+	savedActions[arrayIndex].networkId = networkId;
+	savedActions[arrayIndex].action = ReplicationAction::Create;
 }
 
 void ReplicationManagerServer::update(uint32 networkId)
 {
-	ASSERT(networkId < MAX_NETWORK_OBJECTS);
-	savedActions[networkId] = ReplicationAction::Update;
+	uint16 arrayIndex = networkId & 0xffff;
+	ASSERT(arrayIndex < MAX_NETWORK_OBJECTS);
+	savedActions[arrayIndex].networkId = networkId;
+	savedActions[arrayIndex].action = ReplicationAction::Update;
 }
 
 void ReplicationManagerServer::destroy(uint32 networkId)
 {
-	ASSERT(networkId < MAX_NETWORK_OBJECTS);
-	savedActions[networkId] = ReplicationAction::Destroy;
+	uint16 arrayIndex = networkId & 0xffff;
+	ASSERT(arrayIndex < MAX_NETWORK_OBJECTS);
+	savedActions[arrayIndex].networkId = networkId;
+	savedActions[arrayIndex].action = ReplicationAction::Destroy;
 }
 
 // Prepares the packet to be send with all the actions needed
@@ -34,30 +40,30 @@ void ReplicationManagerServer::write(OutputMemoryStream& packet)
 	for (int i = 0; i < MAX_NETWORK_OBJECTS; i++)
 	{
 		// Replication Action
-		ReplicationAction action = savedActions[i];
+		ReplicationAction action = savedActions[i].action;
 		if (action == ReplicationAction::None)
 			continue;
 
 		// Network ID
-		packet << i;
+		packet << savedActions[i].networkId;
 
 		// Serializing the action
 		packet << action;
 
 		if (action == ReplicationAction::Destroy)
 		{
-			savedActions[i] = ReplicationAction::None;
+			savedActions[i].action = ReplicationAction::None;
 			continue;
 		}
 
 		// Serializing GameObject info
-		GameObject* obj = App->modLinkingContext->getNetworkGameObject(i);
+		GameObject* obj = App->modLinkingContext->getNetworkGameObject(savedActions[i].networkId);
 		if (obj != nullptr)
 			obj->Serialize(packet);
 		else
 			ELOG("Error getting network gameobject");
 
 		// Reseting the state
-		savedActions[i] = ReplicationAction::None;
+		savedActions[i].action = ReplicationAction::None;
 	}
 }

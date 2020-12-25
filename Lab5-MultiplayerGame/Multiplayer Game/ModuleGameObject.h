@@ -50,6 +50,19 @@ struct GameObject
 
 		packet << int(state);
 	}
+
+	void Deserialize(const InputMemoryStream& packet)
+	{
+		packet >> position.x;
+		packet >> position.y;
+		packet >> size.x;
+		packet >> size.y;
+		packet >> angle;
+
+		// sprite, animation...
+
+		packet >> state;
+	}
 	
 
 private:

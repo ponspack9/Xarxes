@@ -96,6 +96,8 @@ void ModuleNetworkingClient::onGui()
 
 			ImGui::Text("Input:");
 			ImGui::InputFloat("Delivery interval (s)", &inputDeliveryIntervalSeconds, 0.01f, 0.1f, 4);
+
+			ImGui::Checkbox("Render colliders", &App->modRender->mustRenderColliders);
 		}
 	}
 }
@@ -105,37 +107,47 @@ void ModuleNetworkingClient::onPacketReceived(const InputMemoryStream &packet, c
 
 	uint32 protoId;
 	packet >> protoId;
-	if (protoId != PROTOCOL_ID) return;
 
-	ServerMessage message;
-	packet >> message;
-
-	if (state == ClientState::Connecting)
+	if (protoId == PROTOCOL_ID)
 	{
-		if (message == ServerMessage::Welcome)
-		{
-			packet >> playerId;
-			packet >> networkId;
+		ServerMessage message;
+		packet >> message;
 
-			LOG("ModuleNetworkingClient::onPacketReceived() - Welcome from server");
-			state = ClientState::Connected;
-		}
-		else if (message == ServerMessage::Unwelcome)
+		if (state == ClientState::Connecting)
 		{
-			WLOG("ModuleNetworkingClient::onPacketReceived() - Unwelcome from server :-(");
-			disconnect();
+			if (message == ServerMessage::Welcome)
+			{
+				packet >> playerId;
+				packet >> networkId;
+
+				LOG("ModuleNetworkingClient::onPacketReceived() - Welcome from server");
+				state = ClientState::Connected;
+			}
+			else if (message == ServerMessage::Unwelcome)
+			{
+				WLOG("ModuleNetworkingClient::onPacketReceived() - Unwelcome from server :-(");
+				disconnect();
+			}
+		}
+		else if (state == ClientState::Connected)
+		{
+			// TODO(Oscar): UDP virtual connection
+			if (message == ServerMessage::Ping)
+			{
+				secondsSinceLastPingRecieved = 0;
+			}
+			
+
+			// TODO(you): Reliability on top of UDP lab session
 		}
 	}
-	else if (state == ClientState::Connected)
+	// TODO(Oscar): World state replication lab session
+	else if (protoId == REPLICATION_ID)
 	{
-		// TODO(you): UDP virtual connection lab session
-		if (message == ServerMessage::Ping)
+		if (state == ClientState::Connected)
 		{
-			secondsSinceLastPingRecieved = 0;
+			replicationManagerClient.read(packet);
 		}
-		// TODO(you): World state replication lab session
-
-		// TODO(you): Reliability on top of UDP lab session
 	}
 }
 

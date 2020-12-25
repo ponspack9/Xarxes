@@ -1,3 +1,9 @@
 #pragma once
 
-// TODO(you): World state replication lab session
+// TODO(Oscar): World state replication 
+class ReplicationManagerClient
+{
+public:
+
+	void read(const InputMemoryStream& packet);
+};

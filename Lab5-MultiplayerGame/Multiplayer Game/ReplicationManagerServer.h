@@ -15,5 +15,5 @@ public:
 
 	// Saves all the commands used in a list/map...
 	//std::vector<ReplicationCommand> savedCommands;
-	ReplicationAction savedActions[MAX_NETWORK_OBJECTS] = { ReplicationAction::None};
+	ReplicationCommand savedActions[MAX_NETWORK_OBJECTS];
 };

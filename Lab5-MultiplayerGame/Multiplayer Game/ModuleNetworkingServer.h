@@ -53,7 +53,7 @@ private:
 
 		// TODO(Oscar): UDP virtual connection
 		real64 secondsSinceLastPingRecieved = 0;
-		// TODO(you): World state replication lab session
+		// TODO(Oscar): World state replication lab session
 		ReplicationManagerServer replicationManagerServer;
 		// TODO(you): Reliability on top of UDP lab session
 
