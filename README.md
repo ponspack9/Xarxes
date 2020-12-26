@@ -8,13 +8,13 @@ GAME NAME is a 2 player online game made with C++ by Oscar Pons and David Tello,
 ## Features
 **feature, author, degree of completeness (tried but not achieved/achieved with some known bugs/completely achieved), result accomplished & known bugs/issues**
 * [x] [Oscar] UDP virtual connection -> Achieved with some bugs
-  * Most times when a client leaves the server instantly disconnects it and prompts a WSAECONNRESET message in the server side. And sometimes it seems not to notice and do expected behaviour that is waiting till the DISCONNECT_TIMEOUT_SECONDS is reached and then disconnects the client.
-  * Possible reasons may be
-With clients seems to have no effect the programmed timeout and leaves game instantly when server is disconnected, showing the same error mentioned above.
+  * Most times when a client leaves the server instantly disconnects it and prompts a WSAECONNRESET message in the server side. And sometimes it seems not to notice and do expected behaviour that is waiting till the DISCONNECT_TIMEOUT_SECONDS is reached and then disconnects the client. With clients seems to have no effect the programmed timeout and leaves game instantly when server is disconnected, showing the same error mentioned above.
+  * Possible reasons may be: ??
 * [ ] Accept 2 players or more -> Nope (World replication bug)
 * [ ] Handle join/leave events
-* [x] [Oscar]World State Replication -> achieved with some known bugs
-    * Liada padre a partir de mas de un jugador, o que el jugador 1 abandone y vuelva a entrar, algo con las ID esta pasando imagino
+* [x] [Oscar]World State Replication -> Achieved with some known bugs
+    * ~~Liada padre a partir de mas de un jugador, o que el jugador 1 abandone y vuelva a entrar, algo con las ID esta pasando imagino~~
+	* NetworkId problems confirmed, now it's solved the previous issue (RegisterWithNetworkId). Remains a problem with delayed destroys and new instantiations: when the server has already delay destroyed a bullet and creates a new one, it assigns an index free for him but occupied on the clients, then an assert arises. Changing the index should be the solution but then the networkID is fuc*ed up, so I will keep thinking. I think I can confirm this bug because it shows up more frecuently when the intervals of sending the world state replication are longer, being easy to encounter this "data race".
 * [ ] Redundant sending of input packets
 * [ ] Delivery Manager (successful deliveries / delivery failures on timeout -> resend current state)
 * [ ] Client side prediction with server reconciliation

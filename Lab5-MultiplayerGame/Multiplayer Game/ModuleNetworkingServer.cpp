@@ -218,8 +218,16 @@ void ModuleNetworkingServer::onUpdate()
 				}
 			}
 		}
+
+		// Flags to check if the action has been performed
+		// needed to send to ALL clients the data
 		bool resetSecondsSinceLastPingSent = false;
+		bool resetSecondsSinceLastWorldStateSent = false;
+
+		//Increment the timers
 		secondsSinceLastPingSent += Time.deltaTime;
+		secondsSinceLastWorldStateSent += Time.deltaTime;
+
 		for (ClientProxy &clientProxy : clientProxies)
 		{
 			if (clientProxy.connected)
@@ -250,16 +258,21 @@ void ModuleNetworkingServer::onUpdate()
 				// END UDP virtual connection
 
 				// TODO(Oscar): World state replication
-				// TODO(Oscar): World state replication -> use intervals to send info
-				OutputMemoryStream packet;
-				clientProxy.replicationManagerServer.write(packet);
-				sendPacket(packet, clientProxy.address);
+				if (secondsSinceLastWorldStateSent >= SEND_WORLD_STATE_INTERVAL_SECONDS)
+				{
+					OutputMemoryStream packet;
+					clientProxy.replicationManagerServer.write(packet);
+					sendPacket(packet, clientProxy.address);
+					resetSecondsSinceLastWorldStateSent = true;
+				}
 
 				// TODO(you): Reliability on top of UDP lab session
 			}
 		}
 		if (resetSecondsSinceLastPingSent)
 			secondsSinceLastPingSent = 0;
+		if (resetSecondsSinceLastWorldStateSent)
+			secondsSinceLastWorldStateSent = 0;
 	}
 }
 
@@ -391,6 +404,8 @@ GameObject * ModuleNetworkingServer::instantiateNetworkObject()
 
 	// Register the object into the linking context
 	App->modLinkingContext->registerNetworkGameObject(gameObject);
+	uint16 arrayIndex = gameObject->networkId & 0xffff;
+	DLOG("Instantiated network gameobject with ID: %d NetID: %d ArrayIndex: %hu State: %d", gameObject->id, gameObject->networkId, arrayIndex, (int)gameObject->state);
 
 	// Notify all client proxies' replication manager to create the object remotely
 	for (int i = 0; i < MAX_CLIENTS; ++i)

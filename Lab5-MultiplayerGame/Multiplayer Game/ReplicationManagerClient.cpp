@@ -24,13 +24,19 @@ void ReplicationManagerClient::read(const InputMemoryStream& packet)
 		{
 			GameObject* obj = App->modLinkingContext->getNetworkGameObject(networkId);
 			if (obj != nullptr)
+			{
 				App->modLinkingContext->unregisterNetworkGameObject(obj);
-			Destroy(obj);
+				Destroy(obj);
+			}
+			else
+			{
+				ELOG("Could not replicate action DESTROY for network object %d", networkId);
+			}
 		}
 		else if (action == ReplicationAction::Create)
 		{
 			GameObject* obj = Instantiate();
-			App->modLinkingContext->registerNetworkGameObject(obj);
+			App->modLinkingContext->registerNetworkGameObjectWithNetworkId(obj,networkId);
 			obj->Deserialize(packet);
 		}
 		else if (action == ReplicationAction::Update)

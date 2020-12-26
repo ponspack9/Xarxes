@@ -52,7 +52,7 @@ private:
 		GameObject *gameObject = nullptr;
 
 		// TODO(Oscar): UDP virtual connection
-		real64 secondsSinceLastPingRecieved = 0;
+		real32 secondsSinceLastPingRecieved = 0;
 		// TODO(Oscar): World state replication lab session
 		ReplicationManagerServer replicationManagerServer;
 		// TODO(you): Reliability on top of UDP lab session
@@ -124,6 +124,8 @@ private:
 
 	// TODO(Oscar): UDP virtual connection 
 	real32 secondsSinceLastPingSent = 0;
+	real32 secondsSinceLastWorldStateSent = 0;
+
 
 };
 

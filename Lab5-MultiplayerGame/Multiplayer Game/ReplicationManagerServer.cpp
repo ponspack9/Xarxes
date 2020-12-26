@@ -52,7 +52,9 @@ void ReplicationManagerServer::write(OutputMemoryStream& packet)
 
 		if (action == ReplicationAction::Destroy)
 		{
+			// Reseting the state
 			savedActions[i].action = ReplicationAction::None;
+			savedActions[i].networkId = 0;
 			continue;
 		}
 
@@ -65,5 +67,6 @@ void ReplicationManagerServer::write(OutputMemoryStream& packet)
 
 		// Reseting the state
 		savedActions[i].action = ReplicationAction::None;
+		savedActions[i].networkId = 0;
 	}
 }
