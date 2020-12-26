@@ -101,7 +101,8 @@ private:
 	// Delivery manager
 	//////////////////////////////////////////////////////////////////////
 
-	// TODO(you): Reliability on top of UDP lab session
+	// TODO(Oscar): Reliability on top of UDP lab session
+	DeliveryManager deliveryManager;
 
 
 

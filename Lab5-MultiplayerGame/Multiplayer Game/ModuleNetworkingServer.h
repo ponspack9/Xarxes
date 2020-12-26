@@ -55,7 +55,8 @@ private:
 		real32 secondsSinceLastPingRecieved = 0;
 		// TODO(Oscar): World state replication lab session
 		ReplicationManagerServer replicationManagerServer;
-		// TODO(you): Reliability on top of UDP lab session
+		// TODO(Oscar): Reliability on top of UDP lab session
+		DeliveryManager deliveryManager;
 
 		uint32 nextExpectedInputSequenceNumber = 0;
 		InputController gamepad;

@@ -36,13 +36,14 @@
 #define MAX_COLLIDERS                       MAX_GAME_OBJECTS
 #define MAX_CLIENTS                                        8
 #define MAX_NETWORK_OBJECTS                              256
+#define MAX_PENDING_PACKETS								1024
 
 #define SCENE_TRANSITION_TIME_SECONDS                   1.0f
 #define DISCONNECT_TIMEOUT_SECONDS                      5.0f
 #define PACKET_DELIVERY_TIMEOUT_SECONDS                 0.5f
 #define DEFAULT_PACKET_SIZE                     Kilobytes(4)
 #define PING_INTERVAL_SECONDS                           0.5f
-#define SEND_WORLD_STATE_INTERVAL_SECONDS				0.25f
+#define SEND_WORLD_STATE_INTERVAL_SECONDS			   0.25f
 
 
 ////////////////////////////////////////////////////////////////////////
