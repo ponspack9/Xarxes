@@ -98,6 +98,21 @@ void ModuleNetworkingClient::onGui()
 			ImGui::InputFloat("Delivery interval (s)", &inputDeliveryIntervalSeconds, 0.01f, 0.1f, 4);
 
 			ImGui::Checkbox("Render colliders", &App->modRender->mustRenderColliders);
+
+			ImGui::Separator();
+			ImGui::Text("Packets recieved, pending ACK to send");
+
+			int limit = 9;
+			int c = 0;
+			for (uint32 i : deliveryManager.pendingAck)
+			{
+				if (c > limit)
+					c = 0;
+				else if (c > 0)
+					ImGui::SameLine();
+				ImGui::Text("%hd", i); 
+				c++;
+			}
 		}
 	}
 }
@@ -138,16 +153,19 @@ void ModuleNetworkingClient::onPacketReceived(const InputMemoryStream &packet, c
 			}
 			
 
-			// TODO(you): Reliability on top of UDP lab session
+			
 		}
 	}
 	// TODO(Oscar): World state replication lab session
+	// TODO(Oscar): Reliability on top of UDP lab session
 	else if (protoId == REPLICATION_ID)
 	{
 		if (state == ClientState::Connected)
 		{
+			deliveryManager.processSequenceNumber(packet);
 			replicationManagerClient.read(packet);
 		}
+
 	}
 }
 
@@ -194,6 +212,18 @@ void ModuleNetworkingClient::onUpdate()
 			disconnect();
 		}
 
+		// TODO(you): Reliability on top of UDP lab session
+		secondsSinceLastAckSent += Time.deltaTime;
+		if (secondsSinceLastAckSent >= PENDING_PACKETS_TIMEOUT_SECONDS && deliveryManager.hasSequenceNumbersPendingAck())
+		{
+			OutputMemoryStream packet;
+			packet << PROTOCOL_ID;
+			packet << ClientMessage::Ack;
+			deliveryManager.writeSequenceNumbersPendingAck(packet);
+			sendPacket(packet, serverAddress);
+			secondsSinceLastAckSent = 0;
+
+		}
 		// Process more inputs if there's space
 		if (inputDataBack - inputDataFront < ArrayCount(inputData))
 		{

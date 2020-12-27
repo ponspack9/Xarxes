@@ -11,7 +11,7 @@ public:
 	void destroy(uint32 networkId);
 
 	// Generate a packet with the data of all the commands you have used
-	void write(OutputMemoryStream& packet);
+	void write(OutputMemoryStream& packet, Delivery* delivery);
 
 	// Saves all the commands used in a list/map...
 	//std::vector<ReplicationCommand> savedCommands;

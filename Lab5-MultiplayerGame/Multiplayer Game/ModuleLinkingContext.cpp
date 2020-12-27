@@ -24,6 +24,7 @@ void ModuleLinkingContext::registerNetworkGameObjectWithNetworkId(GameObject * g
 	uint16 arrayIndex = arrayIndexFromNetworkId(networkId);
 	ASSERT(arrayIndex < MAX_NETWORK_OBJECTS);
 	ASSERT(networkGameObjects[arrayIndex] == nullptr);
+	// TODO(Oscar) world state replication bug
 	networkGameObjects[arrayIndex] = gameObject;
 	gameObject->networkId = networkId;
 	networkGameObjectsCount++;

@@ -30,13 +30,14 @@ void ReplicationManagerServer::destroy(uint32 networkId)
 
 // Prepares the packet to be send with all the actions needed
 // Does NOT send the packet
-void ReplicationManagerServer::write(OutputMemoryStream& packet)
+void ReplicationManagerServer::write(OutputMemoryStream& packet, Delivery* delivery)
 {
 	// Maybe to be optimized :
 	//		- put a flag to send packets only if changes are made
 	//		- traverse the array til ModuleLinkingContext.networkGameObjectsCount;
 	//			App->modLinkingContext->getNetworkGameObjectsCount()
-	packet << REPLICATION_ID;
+	
+
 	for (int i = 0; i < MAX_NETWORK_OBJECTS; i++)
 	{
 		// Replication Action
@@ -46,9 +47,11 @@ void ReplicationManagerServer::write(OutputMemoryStream& packet)
 
 		// Network ID
 		packet << savedActions[i].networkId;
+		delivery->networkIds.push_back(savedActions[i].networkId);
 
 		// Serializing the action
 		packet << action;
+		delivery->actions.push_back(action);
 
 		if (action == ReplicationAction::Destroy)
 		{

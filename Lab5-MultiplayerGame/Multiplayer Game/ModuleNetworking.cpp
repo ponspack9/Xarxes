@@ -168,11 +168,11 @@ bool ModuleNetworking::gui()
 
 
 		// EXTRA
+		ImGui::Separator();
 		GameObject* networkGameObjects[MAX_NETWORK_OBJECTS] = {};
 		uint16 networkGameObjectsCount;
 		App->modLinkingContext->getNetworkGameObjects(networkGameObjects, &networkGameObjectsCount);
 		ImGui::Text(" - # Networked objects: %u", App->modLinkingContext->getNetworkGameObjectsCount());
-		ImGui::Separator();
 		for (int i = 0; i < networkGameObjectsCount; i++)
 		{
 			GameObject* obj = networkGameObjects[i];

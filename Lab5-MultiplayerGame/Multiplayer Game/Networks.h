@@ -43,8 +43,9 @@
 #define PACKET_DELIVERY_TIMEOUT_SECONDS                 0.5f
 #define DEFAULT_PACKET_SIZE                     Kilobytes(4)
 #define PING_INTERVAL_SECONDS                           0.5f
+// Oscar
 #define SEND_WORLD_STATE_INTERVAL_SECONDS			   0.25f
-
+#define PENDING_PACKETS_TIMEOUT_SECONDS					3.0f
 
 ////////////////////////////////////////////////////////////////////////
 // BASIC TYPES

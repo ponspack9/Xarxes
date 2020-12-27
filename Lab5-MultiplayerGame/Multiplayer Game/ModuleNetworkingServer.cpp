@@ -56,6 +56,7 @@ void ModuleNetworkingServer::onGui()
 			{
 				if (clientProxies[i].connected)
 				{
+					ImGui::Separator();
 					ImGui::Text("CLIENT %d", count++);
 					ImGui::Text(" - address: %d.%d.%d.%d",
 						clientProxies[i].address.sin_addr.S_un.S_un_b.s_b1,
@@ -73,12 +74,26 @@ void ModuleNetworkingServer::onGui()
 					{
 						ImGui::Text(" - gameObject net id: (null)");
 					}
-					
 					ImGui::Separator();
+					ImGui::Text("Packets sent, pending ACK:");
+
+					int limit = 9;
+					int c = 0;
+					for (Delivery* delivery : clientProxies[i].deliveryManager.pendingDeliveries)
+					{
+						if (c > limit)
+							c = 0;
+						else if (c > 0)
+							ImGui::SameLine();
+						ImGui::Text("%hd", delivery->sequenceNumber);
+						c++;
+					}
+					ImGui::Separator();
+					
 				}
 			}
 
-			ImGui::Checkbox("Render colliders", &App->modRender->mustRenderColliders);
+			//ImGui::Checkbox("Render colliders", &App->modRender->mustRenderColliders);
 		}
 	}
 }
@@ -197,6 +212,15 @@ void ModuleNetworkingServer::onPacketReceived(const InputMemoryStream &packet, c
 
 			}
 		}
+		// TODO(you): Reliability on top of UDP lab session
+		else if (message == ClientMessage::Ack)
+		{
+			if (proxy != nullptr)
+			{
+				proxy->deliveryManager.processAckdSequenceNumbers(packet);
+
+			}
+		}
 
 	}
 }
@@ -258,15 +282,24 @@ void ModuleNetworkingServer::onUpdate()
 				// END UDP virtual connection
 
 				// TODO(Oscar): World state replication
+				// TODO(Oscar): Reliability on top of UDP lab session
+				// REPLICATION_ID
+				// Sequence number
+				// Replication_type
+				// Replication_info
+				// ...
+				// Replication_type
+				// Replication_info
 				if (secondsSinceLastWorldStateSent >= SEND_WORLD_STATE_INTERVAL_SECONDS)
 				{
 					OutputMemoryStream packet;
-					clientProxy.replicationManagerServer.write(packet);
+					packet << REPLICATION_ID;
+					Delivery* delivery = clientProxy.deliveryManager.writeSequenceNumber(packet);
+					clientProxy.replicationManagerServer.write(packet, delivery);
 					sendPacket(packet, clientProxy.address);
 					resetSecondsSinceLastWorldStateSent = true;
 				}
 
-				// TODO(you): Reliability on top of UDP lab session
 			}
 		}
 		if (resetSecondsSinceLastPingSent)

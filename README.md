@@ -14,10 +14,12 @@ GAME NAME is a 2 player online game made with C++ by Oscar Pons and David Tello,
 * [ ] Handle join/leave events
 * [x] [Oscar]World State Replication -> Achieved with some known bugs
     * ~~Liada padre a partir de mas de un jugador, o que el jugador 1 abandone y vuelva a entrar, algo con las ID esta pasando imagino~~
-	* NetworkId problems confirmed, now it's solved the previous issue (RegisterWithNetworkId). Remains a problem with delayed destroys and new instantiations: when the server has already delay destroyed a bullet and creates a new one, it assigns an index free for him but occupied on the clients, then an assert arises. Changing the index should be the solution but then the networkID is fuc*ed up, so I will keep thinking. I think I can confirm this bug because it shows up more frecuently when the intervals of sending the world state replication are longer, being easy to encounter this "data race".
-	* [Update] Thinking in having a confirmation from clients before unregistering a netobject from the server. That should work
+	* ~~NetworkId problems confirmed, now it's solved the previous issue (RegisterWithNetworkId). Remains a problem with delayed destroys and new instantiations: when the server has already delay destroyed a bullet and creates a new one, it assigns an index free for him but occupied on the clients, then an assert arises. Changing the index should be the solution but then the networkID is fuc*ed up, so I will keep thinking. I think I can confirm this bug because it shows up more frecuently when the intervals of sending the world state replication are longer, being easy to encounter this "data race".~~
+	* ~~Thinking in having a confirmation from clients before unregistering a netobject from the server. That should work (Difficult!)~~
+	* Seen the slide that says to just ignore the client side and follow the server instructions
 * [ ] Redundant sending of input packets
 * [ ] Delivery Manager (successful deliveries / delivery failures on timeout -> resend current state)
+	* Now there's only the basic functionality implemented: Server sends packets of replication with a sequence number and remember them, the client gets this packets, saves the sequence numbers and in intervals sends back the ack of them. This can be visualized in the GUI of each, and applying network losses, jitter do interfere with them and can be seen that packets gets accumulated or recieved in unnexpected order.
 * [ ] Client side prediction with server reconciliation
 * [ ] Entity interpolation
 
