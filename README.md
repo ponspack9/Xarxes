@@ -18,7 +18,7 @@ GAME NAME is a 2 player online game made with C++ by Oscar Pons and David Tello,
 	* ~~Thinking in having a confirmation from clients before unregistering a netobject from the server. That should work (Difficult!)~~
 	* Seen the slide that says to just ignore the client side and follow the server instructions
 * [ ] Redundant sending of input packets
-* [ ] Delivery Manager (successful deliveries / delivery failures on timeout -> resend current state)
+* [ ] [Oscar] Delivery Manager (successful deliveries / delivery failures on timeout -> resend current state)
 	* Now there's only the basic functionality implemented: Server sends packets of replication with a sequence number and remember them, the client gets this packets, saves the sequence numbers and in intervals sends back the ack of them. This can be visualized in the GUI of each, and applying network losses, jitter do interfere with them and can be seen that packets gets accumulated or recieved in unnexpected order.
 * [ ] Client side prediction with server reconciliation
 * [ ] Entity interpolation

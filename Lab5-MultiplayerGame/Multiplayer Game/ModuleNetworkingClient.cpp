@@ -99,6 +99,20 @@ void ModuleNetworkingClient::onGui()
 
 			ImGui::Checkbox("Render colliders", &App->modRender->mustRenderColliders);
 
+		}
+	}
+	if (ImGui::CollapsingHeader("Debug Network Client", ImGuiTreeNodeFlags_DefaultOpen))
+	{
+		if (state == ClientState::Connecting)
+		{
+			ImGui::Text("Connecting to server...");
+		}
+		else if (state == ClientState::Connected)
+		{
+			ImGui::Text("Next expected packet: %hd", deliveryManager.nextExpectedSequenceNumber);
+
+			ImGui::Separator();
+
 			ImGui::Separator();
 			ImGui::Text("Packets recieved, pending ACK to send");
 
@@ -110,7 +124,7 @@ void ModuleNetworkingClient::onGui()
 					c = 0;
 				else if (c > 0)
 					ImGui::SameLine();
-				ImGui::Text("%hd", i); 
+				ImGui::Text("%hd", i);
 				c++;
 			}
 		}

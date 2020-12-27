@@ -29,6 +29,9 @@ void DeliveryManager::processAckdSequenceNumbers(const InputMemoryStream& packet
 		{
 			if (pendingDeliveries[i]->sequenceNumber == seq)
 			{
+				if (pendingDeliveries[i]->delegate != nullptr)
+					pendingDeliveries[i]->delegate->onDeliverySuccess(this);
+
 				pendingDeliveries.erase(pendingDeliveries.begin() + i);
 			}
 		}
@@ -41,6 +44,8 @@ void DeliveryManager::processTimedOutPackets()
 	{
 		if (Time.time - pendingDeliveries[i]->dispatchTime >= PENDING_PACKETS_TIMEOUT_SECONDS)
 		{
+			if (pendingDeliveries[i]->delegate != nullptr)
+				pendingDeliveries[i]->delegate->onDeliveryFailure(this);
 			pendingDeliveries.erase(pendingDeliveries.begin() +i);
 		}
 	}

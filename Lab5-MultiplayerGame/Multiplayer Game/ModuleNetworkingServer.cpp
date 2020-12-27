@@ -85,7 +85,11 @@ void ModuleNetworkingServer::onGui()
 							c = 0;
 						else if (c > 0)
 							ImGui::SameLine();
-						ImGui::Text("%hd", delivery->sequenceNumber);
+						// Printing in red packets about to get discarded
+						if(Time.time - delivery->dispatchTime >= PENDING_PACKETS_TIMEOUT_SECONDS -1)
+							ImGui::TextColored({255,0,0,255},"%hd", delivery->sequenceNumber);
+						else
+							ImGui::Text("%hd", delivery->sequenceNumber);
 						c++;
 					}
 					ImGui::Separator();
@@ -163,7 +167,6 @@ void ModuleNetworkingServer::onPacketReceived(const InputMemoryStream &packet, c
 					// TODO(Oscar): World state replication lab session
 					proxy->replicationManagerServer.create(gameObject->networkId);
 				}
-
 				LOG("Message received: hello - from player %s", proxy->name.c_str());
 			}
 			else
@@ -295,6 +298,7 @@ void ModuleNetworkingServer::onUpdate()
 					OutputMemoryStream packet;
 					packet << REPLICATION_ID;
 					Delivery* delivery = clientProxy.deliveryManager.writeSequenceNumber(packet);
+					//delivery->delegate = (DeliveryDelegate*)&clientProxy.deliveryDelegateServer;
 					clientProxy.replicationManagerServer.write(packet, delivery);
 					sendPacket(packet, clientProxy.address);
 					resetSecondsSinceLastWorldStateSent = true;
