@@ -80,7 +80,7 @@ public:
 	// Reciever side / CLIENT
 	// The next expected sequence number
 	uint32 nextExpectedSequenceNumber = 0;
-	// Alist of sequence numbers pending ack
+	// Alist of sequence numbers pending ack to be sent
 	//uint32 pendingAck[MAX_PENDING_PACKETS];
 	std::list<uint32> pendingAck;
 

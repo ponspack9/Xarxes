@@ -109,7 +109,7 @@ void ModuleNetworkingClient::onGui()
 		}
 		else if (state == ClientState::Connected)
 		{
-			ImGui::Text("Next expected packet: %hd", deliveryManager.nextExpectedSequenceNumber);
+			ImGui::Text("Next expected replication packet: %hd", deliveryManager.nextExpectedSequenceNumber);
 
 			ImGui::Separator();
 
@@ -125,6 +125,22 @@ void ModuleNetworkingClient::onGui()
 				else if (c > 0)
 					ImGui::SameLine();
 				ImGui::Text("%hd", i);
+				c++;
+			}
+
+			c = 0;
+			ImGui::Separator();
+			ImGui::Text("Next expected input ACK packet: %hd", inputDataFront);
+			ImGui::Text("Input packets to be sent:");
+			for (uint32 i = inputDataFront % ArrayCount(inputData); i < inputDataBack % ArrayCount(inputData); ++i)
+			{
+				if (c > limit)
+					c = 0;
+				else if (c > 0)
+					ImGui::SameLine();
+
+				uint32 indata = inputData[i].sequenceNumber;
+				ImGui::Text("%hd", indata);
 				c++;
 			}
 		}
@@ -164,6 +180,11 @@ void ModuleNetworkingClient::onPacketReceived(const InputMemoryStream &packet, c
 			if (message == ServerMessage::Ping)
 			{
 				secondsSinceLastPingRecieved = 0;
+			}
+			else if (message == ServerMessage::Input)
+			{
+				packet >> inputDataFront;
+				inputDataFront++;
 			}
 			
 
@@ -261,7 +282,7 @@ void ModuleNetworkingClient::onUpdate()
 			packet << PROTOCOL_ID;
 			packet << ClientMessage::Input;
 
-			// TODO(you): Reliability on top of UDP lab session
+			// TODO(Oscar): Reliability on top of UDP lab session
 
 			for (uint32 i = inputDataFront; i < inputDataBack; ++i)
 			{
@@ -273,7 +294,7 @@ void ModuleNetworkingClient::onUpdate()
 			}
 
 			// Clear the queue
-			inputDataFront = inputDataBack;
+			//inputDataFront = inputDataBack;
 
 			sendPacket(packet, serverAddress);
 		}

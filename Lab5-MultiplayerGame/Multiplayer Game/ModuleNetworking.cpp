@@ -172,15 +172,18 @@ bool ModuleNetworking::gui()
 		GameObject* networkGameObjects[MAX_NETWORK_OBJECTS] = {};
 		uint16 networkGameObjectsCount;
 		App->modLinkingContext->getNetworkGameObjects(networkGameObjects, &networkGameObjectsCount);
-		ImGui::Text(" - # Networked objects: %u", App->modLinkingContext->getNetworkGameObjectsCount());
-		for (int i = 0; i < networkGameObjectsCount; i++)
+		char netstr[256];
+		sprintf(netstr, "# Networked objects : % u", App->modLinkingContext->getNetworkGameObjectsCount());
+		if (ImGui::CollapsingHeader(netstr, ImGuiTreeNodeFlags_DefaultOpen))
 		{
-			GameObject* obj = networkGameObjects[i];
-			//if (obj->networkId != 0)
-			uint16 arrayIndex = obj->networkId & 0xffff;
-			ImGui::Text("ID: %d NetID: %d ArrayIndex: %hu State: %d",obj->id, obj->networkId, arrayIndex, (int)obj->state);
+			for (int i = 0; i < networkGameObjectsCount; i++)
+			{
+				GameObject* obj = networkGameObjects[i];
+				//if (obj->networkId != 0)
+				uint16 arrayIndex = obj->networkId & 0xffff;
+				ImGui::Text("ID: %d NetID: %d ArrayIndex: %hu State: %d", obj->id, obj->networkId, arrayIndex, (int)obj->state);
+			}
 		}
-
 
 		if (ImGui::Button("Disconnect")) {
 			disconnect();

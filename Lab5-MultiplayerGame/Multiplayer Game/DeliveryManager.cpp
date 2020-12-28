@@ -51,14 +51,20 @@ void DeliveryManager::processTimedOutPackets()
 	}
 }
 
+// Client
 // Put to the list the sequence number recieved to later send the ack
 bool DeliveryManager::processSequenceNumber(const InputMemoryStream& packet)
 {
 	uint32 i = 0;
 	packet >> i;
-	pendingAck.push_back(i);
+	if (i == nextExpectedSequenceNumber)
+	{
+		pendingAck.push_back(i);
+		nextExpectedSequenceNumber++;
+		return true;
+	}
 
-	return true;
+	return false;
 }
 
 bool DeliveryManager::hasSequenceNumbersPendingAck() const

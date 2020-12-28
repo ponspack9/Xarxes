@@ -202,6 +202,14 @@ void ModuleNetworkingServer::onPacketReceived(const InputMemoryStream &packet, c
 						unpackInputControllerButtons(inputData.buttonBits, proxy->gamepad);
 						proxy->gameObject->behaviour->onInput(proxy->gamepad);
 						proxy->nextExpectedInputSequenceNumber = inputData.sequenceNumber + 1;
+
+						// TODO(Oscar): send with the replication packet
+						// Fast solution to see if things are working
+						OutputMemoryStream packet;
+						packet << PROTOCOL_ID;
+						packet << ServerMessage::Input;
+						packet << inputData.sequenceNumber;
+						sendPacket(packet, fromAddress);
 					}
 				}
 			}
@@ -302,6 +310,8 @@ void ModuleNetworkingServer::onUpdate()
 					clientProxy.replicationManagerServer.write(packet, delivery);
 					sendPacket(packet, clientProxy.address);
 					resetSecondsSinceLastWorldStateSent = true;
+
+					clientProxy.deliveryManager.processTimedOutPackets();
 				}
 
 			}
@@ -442,7 +452,7 @@ GameObject * ModuleNetworkingServer::instantiateNetworkObject()
 	// Register the object into the linking context
 	App->modLinkingContext->registerNetworkGameObject(gameObject);
 	uint16 arrayIndex = gameObject->networkId & 0xffff;
-	DLOG("Instantiated network gameobject with ID: %d NetID: %d ArrayIndex: %hu State: %d", gameObject->id, gameObject->networkId, arrayIndex, (int)gameObject->state);
+	//DLOG("Instantiated network gameobject with ID: %d NetID: %d ArrayIndex: %hu State: %d", gameObject->id, gameObject->networkId, arrayIndex, (int)gameObject->state);
 
 	// Notify all client proxies' replication manager to create the object remotely
 	for (int i = 0; i < MAX_CLIENTS; ++i)
