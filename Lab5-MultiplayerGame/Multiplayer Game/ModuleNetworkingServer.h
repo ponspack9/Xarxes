@@ -48,7 +48,7 @@ private:
 		bool connected = false;
 		sockaddr_in address;
 		uint32 clientId;
-		std::string name = "Player1";
+		std::string name = "";
 		GameObject *gameObject = nullptr;
 
 		// TODO(Oscar): UDP virtual connection
