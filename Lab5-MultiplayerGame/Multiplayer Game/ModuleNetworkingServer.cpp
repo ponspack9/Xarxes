@@ -306,6 +306,8 @@ void ModuleNetworkingServer::onUpdate()
 					OutputMemoryStream packet;
 					packet << REPLICATION_ID;
 					Delivery* delivery = clientProxy.deliveryManager.writeSequenceNumber(packet);
+					// Server reconciliation, last ID of input
+					packet << clientProxy.nextExpectedInputSequenceNumber - 1;
 					//delivery->delegate = (DeliveryDelegate*)&clientProxy.deliveryDelegateServer;
 					clientProxy.replicationManagerServer.write(packet, delivery);
 					sendPacket(packet, clientProxy.address);

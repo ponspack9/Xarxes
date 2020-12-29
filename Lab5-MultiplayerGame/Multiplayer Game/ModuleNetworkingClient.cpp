@@ -198,6 +198,17 @@ void ModuleNetworkingClient::onPacketReceived(const InputMemoryStream &packet, c
 		if (state == ClientState::Connected)
 		{
 			deliveryManager.processSequenceNumber(packet);
+			// Server reconciliation
+			// Id of last input received by the server (ACK)
+			uint32 i = 0;
+			packet >> i;
+
+			if (i < inputDataFront-1)
+			{
+				// Reapply the inputs from i to inputDataBack 
+				inputDataFront = i+1;
+			}
+
 			replicationManagerClient.read(packet);
 		}
 

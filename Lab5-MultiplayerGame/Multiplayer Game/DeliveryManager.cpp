@@ -64,6 +64,7 @@ bool DeliveryManager::processSequenceNumber(const InputMemoryStream& packet)
 		return true;
 	}
 
+
 	return false;
 }
 

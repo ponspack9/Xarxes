@@ -64,7 +64,16 @@ void ReplicationManagerServer::write(OutputMemoryStream& packet, Delivery* deliv
 		// Serializing GameObject info
 		GameObject* obj = App->modLinkingContext->getNetworkGameObject(savedActions[i].networkId);
 		if (obj != nullptr)
-			obj->Serialize(packet);
+		{
+			if (action == ReplicationAction::Create)
+			{
+				SerializeCreate(packet,obj);
+			}
+			else if (action == ReplicationAction::Update)
+			{
+				SerializeUpdate(packet,obj);
+			}
+		}
 		else
 			ELOG("Error getting network gameobject");
 
@@ -72,4 +81,29 @@ void ReplicationManagerServer::write(OutputMemoryStream& packet, Delivery* deliv
 		savedActions[i].action = ReplicationAction::None;
 		savedActions[i].networkId = 0;
 	}
+}
+
+void ReplicationManagerServer::SerializeUpdate(OutputMemoryStream& packet, GameObject* gameObject) const
+{
+	packet << gameObject->position.x;
+	packet << gameObject->position.y;
+	packet << gameObject->size.x;
+	packet << gameObject->size.y;
+	packet << gameObject->angle;
+	packet << int(gameObject->state);
+}
+
+void ReplicationManagerServer::SerializeCreate(OutputMemoryStream& packet, GameObject* gameObject) const
+{
+	packet << gameObject->position.x;
+	packet << gameObject->position.y;
+	packet << gameObject->size.x;
+	packet << gameObject->size.y;
+	packet << gameObject->angle;
+
+	std::string textureFileName = gameObject->sprite->texture->filename;
+	packet << textureFileName;
+	packet << gameObject->sprite->order;
+
+	packet << int(gameObject->state);
 }
