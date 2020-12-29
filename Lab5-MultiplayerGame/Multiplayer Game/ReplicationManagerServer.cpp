@@ -91,6 +91,7 @@ void ReplicationManagerServer::SerializeUpdate(OutputMemoryStream& packet, GameO
 	packet << gameObject->size.y;
 	packet << gameObject->angle;
 	packet << int(gameObject->state);
+	
 }
 
 void ReplicationManagerServer::SerializeCreate(OutputMemoryStream& packet, GameObject* gameObject) const
@@ -106,4 +107,9 @@ void ReplicationManagerServer::SerializeCreate(OutputMemoryStream& packet, GameO
 	packet << gameObject->sprite->order;
 
 	packet << int(gameObject->state);
+
+	if (gameObject->behaviour)
+		packet << gameObject->behaviour->type();
+	else
+		packet << BehaviourType::None;
 }

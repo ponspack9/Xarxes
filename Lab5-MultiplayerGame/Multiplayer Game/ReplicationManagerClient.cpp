@@ -85,10 +85,20 @@ void ReplicationManagerClient::DeserializeCreate(const InputMemoryStream& packet
 		else if (texture == "explosion1.png")
 		{
 			gameObject->sprite->texture = App->modResources->explosion1;
+			gameObject->animation = App->modRender->addAnimation(gameObject);
 			gameObject->animation->clip = App->modResources->explosionClip;
 			App->modSound->playAudioClip(App->modResources->audioClipExplosion);
 		}
 	}
 
 	packet >> gameObject->state;
+
+	BehaviourType behaviour = BehaviourType::None;
+	packet >> behaviour;
+
+	if (behaviour != BehaviourType::None)
+	{
+		App->modBehaviour->addBehaviour(behaviour, gameObject);
+		gameObject->behaviour->start();
+	}
 }
