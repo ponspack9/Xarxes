@@ -77,9 +77,9 @@ void ReplicationManagerClient::DeserializeCreate(const InputMemoryStream& packet
 		if (texture == "spacecraft1.png")
 			gameObject->sprite->texture = App->modResources->spacecraft1;
 		else if (texture == "spacecraft2.png")
-			gameObject->sprite->texture = App->modResources->spacecraft1;
+			gameObject->sprite->texture = App->modResources->spacecraft2;
 		else if (texture == "spacecraft3.png")
-			gameObject->sprite->texture = App->modResources->spacecraft1;
+			gameObject->sprite->texture = App->modResources->spacecraft3;
 		else if (texture == "laser.png")
 			gameObject->sprite->texture = App->modResources->laser;
 		else if (texture == "explosion1.png")
