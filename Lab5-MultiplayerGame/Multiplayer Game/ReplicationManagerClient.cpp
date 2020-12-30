@@ -45,7 +45,10 @@ void ReplicationManagerClient::read(const InputMemoryStream& packet)
 			GameObject* obj = App->modLinkingContext->getNetworkGameObject(networkId);
 			if (obj != nullptr)
 			{
-				DeserializeUpdate(packet, obj);
+				if (obj->behaviour->type() == BehaviourType::Spaceship)
+					DeserializeUpdate(packet, obj, (Spaceship*)obj->behaviour);
+				else if (obj->behaviour->type() == BehaviourType::Laser)
+					DeserializeUpdate(packet, obj, nullptr, (Laser*)obj->behaviour);
 
 				// Interpolation
 				obj->interpolation.secondsElapsed = 0.0f;
@@ -56,7 +59,7 @@ void ReplicationManagerClient::read(const InputMemoryStream& packet)
 	}
 }
 
-void ReplicationManagerClient::DeserializeUpdate(const InputMemoryStream& packet, GameObject* gameObject)
+void ReplicationManagerClient::DeserializeUpdate(const InputMemoryStream& packet, GameObject* gameObject, Spaceship* spaceship, Laser* laser)
 {
 	gameObject->interpolation.initialPosition = gameObject->position;
 	gameObject->interpolation.initialAngle = gameObject->angle;
@@ -67,6 +70,14 @@ void ReplicationManagerClient::DeserializeUpdate(const InputMemoryStream& packet
 	packet >> gameObject->size.y;
 	packet >> gameObject->angle;
 	packet >> gameObject->state;
+
+	if (gameObject->behaviour)
+	{
+		if (gameObject->behaviour->type() == BehaviourType::Spaceship)
+			packet >> spaceship->hitPoints;
+		else if (gameObject->behaviour->type() == BehaviourType::Laser)
+			packet >> laser->gameObject->id;
+	}
 
 	gameObject->interpolation.finalPosition = gameObject->position;
 	gameObject->interpolation.finalAngle = gameObject->angle;
@@ -114,8 +125,5 @@ void ReplicationManagerClient::DeserializeCreate(const InputMemoryStream& packet
 	{
 		App->modBehaviour->addBehaviour(behaviour, gameObject);
 		gameObject->behaviour->start();
-
-		//gameObject->interpolation.initialPosition = gameObject->position;
-		//gameObject->interpolation.initialAngle = gameObject->angle;
 	}
 }

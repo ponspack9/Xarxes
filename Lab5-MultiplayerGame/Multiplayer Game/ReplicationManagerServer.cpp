@@ -92,6 +92,19 @@ void ReplicationManagerServer::SerializeUpdate(OutputMemoryStream& packet, GameO
 	packet << gameObject->angle;
 	packet << int(gameObject->state);
 	
+	if (gameObject->behaviour)
+	{
+		if (gameObject->behaviour->type() == BehaviourType::Spaceship)
+		{
+			Spaceship* spaceship = (Spaceship*)gameObject->behaviour;
+			packet << spaceship->hitPoints;
+		}
+		else if (gameObject->behaviour->type() == BehaviourType::Laser)
+		{
+			Laser* laser = (Laser*)gameObject->behaviour;
+			packet << laser->gameObject->id;
+		}
+	}
 }
 
 void ReplicationManagerServer::SerializeCreate(OutputMemoryStream& packet, GameObject* gameObject) const
