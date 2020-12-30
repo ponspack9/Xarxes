@@ -30,6 +30,24 @@ bool ModuleGameObject::preUpdate()
 
 bool ModuleGameObject::update()
 {
+	// Interpolation
+	if (App->modNetClient->isEnabled())
+	{
+		for (GameObject& obj : gameObjects)
+		{
+			if (obj.state == GameObject::UPDATING)
+			{
+				float time = obj.interpolation.secondsElapsed / SEND_WORLD_STATE_INTERVAL_SECONDS;
+				if (time > 1.0f) time = 1.0f;
+
+				obj.position = lerp(obj.interpolation.initialPosition, obj.interpolation.finalPosition, time);
+				obj.angle = lerp(obj.interpolation.initialAngle, obj.interpolation.finalAngle, time);
+
+				obj.interpolation.secondsElapsed += Time.deltaTime;
+			}
+		}
+	}
+
 	// Delayed destructions
 	for (DelayedDestroyEntry &destroyEntry : gameObjectsWithDelayedDestruction)
 	{

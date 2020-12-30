@@ -39,6 +39,16 @@ struct GameObject
 	};
 	State state = NON_EXISTING;
 
+	struct Interpolation
+	{
+		vec2 initialPosition = vec2{ 0.0f, 0.0f };
+		float initialAngle = 0.0f;
+
+		vec2  finalPosition = vec2{ 0.0f, 0.0f };
+		float finalAngle = 0.0f;
+
+		float secondsElapsed = 0.0f;
+	} interpolation;
 
 private:
 

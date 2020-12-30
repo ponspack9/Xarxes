@@ -51,6 +51,8 @@ void ModuleNetworkingClient::onStart()
 
 	secondsSinceLastHello = 9999.0f;
 	secondsSinceLastInputDelivery = 0.0f;
+
+	isDead(false);
 }
 
 void ModuleNetworkingClient::onGui()
@@ -320,6 +322,8 @@ void ModuleNetworkingClient::onUpdate()
 		}
 		else
 		{
+			if (is_dead) onConnectionReset(serverAddress);
+
 			// This means that the player has been destroyed (e.g. killed)
 		}
 	}
@@ -329,6 +333,8 @@ void ModuleNetworkingClient::onConnectionReset(const sockaddr_in & fromAddress)
 {
 	// TODO Show UI message to the player saying that has been
 	// disconnected from the server or the server is not available
+
+	LOG("You were killed");
 	disconnect();
 }
 

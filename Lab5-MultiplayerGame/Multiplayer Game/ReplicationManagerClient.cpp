@@ -27,6 +27,7 @@ void ReplicationManagerClient::read(const InputMemoryStream& packet)
 			{
 				App->modLinkingContext->unregisterNetworkGameObject(obj);
 				Destroy(obj);
+				App->modNetClient->isDead(true);
 			}
 			else
 			{
@@ -43,19 +44,32 @@ void ReplicationManagerClient::read(const InputMemoryStream& packet)
 		{
 			GameObject* obj = App->modLinkingContext->getNetworkGameObject(networkId);
 			if (obj != nullptr)
-				DeserializeUpdate(packet,obj);
+			{
+				DeserializeUpdate(packet, obj);
+
+				// Interpolation
+				obj->interpolation.secondsElapsed = 0.0f;
+				obj->position = obj->interpolation.initialPosition;
+				obj->angle = obj->interpolation.initialAngle;
+			}
 		}
 	}
 }
 
 void ReplicationManagerClient::DeserializeUpdate(const InputMemoryStream& packet, GameObject* gameObject)
 {
+	gameObject->interpolation.initialPosition = gameObject->position;
+	gameObject->interpolation.initialAngle = gameObject->angle;
+
 	packet >> gameObject->position.x;
 	packet >> gameObject->position.y;
 	packet >> gameObject->size.x;
 	packet >> gameObject->size.y;
 	packet >> gameObject->angle;
 	packet >> gameObject->state;
+
+	gameObject->interpolation.finalPosition = gameObject->position;
+	gameObject->interpolation.finalAngle = gameObject->angle;
 }
 
 void ReplicationManagerClient::DeserializeCreate(const InputMemoryStream& packet, GameObject* gameObject)
@@ -100,5 +114,8 @@ void ReplicationManagerClient::DeserializeCreate(const InputMemoryStream& packet
 	{
 		App->modBehaviour->addBehaviour(behaviour, gameObject);
 		gameObject->behaviour->start();
+
+		//gameObject->interpolation.initialPosition = gameObject->position;
+		//gameObject->interpolation.initialAngle = gameObject->angle;
 	}
 }
