@@ -126,4 +126,7 @@ void ReplicationManagerClient::DeserializeCreate(const InputMemoryStream& packet
 		App->modBehaviour->addBehaviour(behaviour, gameObject);
 		gameObject->behaviour->start();
 	}
+
+	gameObject->interpolation.initialPosition = gameObject->position;
+	gameObject->interpolation.initialAngle = gameObject->angle;
 }

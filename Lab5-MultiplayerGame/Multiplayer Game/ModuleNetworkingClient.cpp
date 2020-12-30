@@ -175,6 +175,11 @@ void ModuleNetworkingClient::onPacketReceived(const InputMemoryStream &packet, c
 				WLOG("ModuleNetworkingClient::onPacketReceived() - Unwelcome from server :-(");
 				disconnect();
 			}
+			else if (message == ServerMessage::GameFull)
+			{
+				WLOG("ModuleNetworkingClient::onPacketReceived() - Game has already started");
+				disconnect();
+			}
 		}
 		else if (state == ClientState::Connected)
 		{
@@ -188,9 +193,24 @@ void ModuleNetworkingClient::onPacketReceived(const InputMemoryStream &packet, c
 				packet >> inputDataFront;
 				inputDataFront++;
 			}
-			
-
-			
+			else if (message == ServerMessage::GameWin)
+			{
+				LOG("Congratulations! You won! --- Disconnecting in 3 seconds", secondsToDisconnect);
+				secondsToDisconnect = 3.0f;
+				is_win = true;
+			}
+			else if (message == ServerMessage::GameStart)
+			{
+				LOG("Starting game in 5 seconds!", secondsToStartGame);
+				secondsToStartGame = 5.0f;
+				gameToStart = true;
+			}
+			else if (message == ServerMessage::WaitingPlayers)
+			{
+				uint8 num_players = 0;
+				packet >> num_players;
+				LOG("Waiting for players %d/3", num_players);
+			}
 		}
 	}
 	// TODO(Oscar): World state replication lab session
@@ -325,6 +345,33 @@ void ModuleNetworkingClient::onUpdate()
 			if (is_dead) onConnectionReset(serverAddress);
 
 			// This means that the player has been destroyed (e.g. killed)
+		}
+
+		if (gameToStart)
+		{
+			if (secondsToStartGame > 0.0f)
+			{
+				secondsToStartGame -= Time.deltaTime;
+			}
+			else
+			{
+				LOG("Starting Game!");
+				gameToStart = false;
+				playerGameObject->position = { Random.next() * 1000, Random.next() * 1000};
+			}
+		}
+
+		if (is_win)
+		{
+			if (secondsToDisconnect > 0.0f)
+			{
+				secondsToDisconnect -= Time.deltaTime;
+			}
+			else
+			{
+				is_win = false;
+				disconnect();
+			}
 		}
 	}
 }

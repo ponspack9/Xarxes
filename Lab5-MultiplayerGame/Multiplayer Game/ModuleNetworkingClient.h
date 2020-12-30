@@ -63,6 +63,11 @@ private:
 	uint32 networkId = 0;
 
 	bool is_dead = false;
+	bool is_win = false;
+	bool gameToStart = false;
+
+	float secondsToDisconnect = 0.0f;
+	float secondsToStartGame = 5.0f;
 
 	// Connecting stage
 

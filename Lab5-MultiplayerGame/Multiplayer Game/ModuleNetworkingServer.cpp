@@ -143,10 +143,11 @@ void ModuleNetworkingServer::onPacketReceived(const InputMemoryStream &packet, c
 				else
 				{
 					// NOTE(jesus): Server is full...
+					LOG("Server is full, wait for next game");
 				}
 			}
 
-			if (proxy != nullptr)
+			if (proxy != nullptr && isGameStarted == false)
 			{
 				// Send welcome to the new player
 				OutputMemoryStream welcomePacket;
@@ -171,9 +172,13 @@ void ModuleNetworkingServer::onPacketReceived(const InputMemoryStream &packet, c
 			}
 			else
 			{
+
 				OutputMemoryStream unwelcomePacket;
 				unwelcomePacket << PROTOCOL_ID;
-				unwelcomePacket << ServerMessage::Unwelcome;
+				if (isGameStarted)
+					unwelcomePacket << ServerMessage::GameFull;
+				else
+					unwelcomePacket << ServerMessage::Unwelcome;
 				sendPacket(unwelcomePacket, fromAddress);
 
 				WLOG("Message received: UNWELCOMED hello - server is full");
@@ -240,6 +245,73 @@ void ModuleNetworkingServer::onUpdate()
 {
 	if (state == ServerState::Listening)
 	{
+		// Check for Game Started
+		uint8 connected = 0;
+		for (ClientProxy client : clientProxies)
+		{
+			if (client.connected == true)
+				connected++;
+		}
+
+		if (connected == 0) //end game
+		{
+			isGameStarted = false;
+		}
+		else if (isGameStarted == false && connected == MAX_CLIENTS) //start game
+		{
+			for (ClientProxy clientProxy : clientProxies)
+			{
+				clientProxy.gameObject->behaviour->isGame = true;
+
+				OutputMemoryStream packet;
+				packet << PROTOCOL_ID;
+				packet << ServerMessage::GameStart;
+				sendPacket(packet, clientProxy.address);
+
+			}
+			isGameStarted = true;
+		}
+		else if (connected == 1) //win game
+		{
+			if (isGameStarted == true)
+			{
+				for (ClientProxy clientProxy : clientProxies)
+				{
+					OutputMemoryStream packet;
+					packet << PROTOCOL_ID;
+					packet << ServerMessage::GameWin;
+					sendPacket(packet, clientProxy.address);
+				}
+			}
+			else if (last_num_connected != connected)
+			{
+				for (ClientProxy clientProxy : clientProxies)
+				{
+					OutputMemoryStream packet;
+					packet << PROTOCOL_ID;
+					packet << ServerMessage::WaitingPlayers;
+					packet << connected;
+					sendPacket(packet, clientProxy.address);
+				}
+				last_num_connected = connected;
+			}
+		}
+		else //waiting for players
+		{
+			if (isGameStarted == false && last_num_connected != connected)
+			{
+				for (ClientProxy clientProxy : clientProxies)
+				{
+					OutputMemoryStream packet;
+					packet << PROTOCOL_ID;
+					packet << ServerMessage::WaitingPlayers;
+					packet << connected;
+					sendPacket(packet, clientProxy.address);
+				}
+				last_num_connected = connected;
+			}
+		}
+
 		// Handle networked game object destructions
 		for (DelayedDestroyEntry &destroyEntry : netGameObjectsToDestroyWithDelay)
 		{

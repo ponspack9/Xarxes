@@ -127,7 +127,8 @@ private:
 	real32 secondsSinceLastPingSent = 0;
 	real32 secondsSinceLastWorldStateSent = 0;
 
-
+	bool isGameStarted = false;
+	uint8 last_num_connected = 0;
 };
 
 

@@ -35,7 +35,7 @@ bool ModuleGameObject::update()
 	{
 		for (GameObject& obj : gameObjects)
 		{
-			if (obj.state == GameObject::UPDATING)
+			if (obj.state == GameObject::UPDATING && obj.behaviour != nullptr && obj.behaviour->type() != BehaviourType::Laser)
 			{
 				float time = obj.interpolation.secondsElapsed / SEND_WORLD_STATE_INTERVAL_SECONDS;
 				if (time > 1.0f) time = 1.0f;

@@ -34,7 +34,7 @@
 #define MAX_TEXTURES                                     512
 #define MAX_GAME_OBJECTS                                4096
 #define MAX_COLLIDERS                       MAX_GAME_OBJECTS
-#define MAX_CLIENTS                                        8
+#define MAX_CLIENTS                                        3
 #define MAX_NETWORK_OBJECTS                              256
 #define MAX_PENDING_PACKETS								1024
 
