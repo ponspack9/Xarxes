@@ -3,6 +3,7 @@
 Spaceship Royale is a 3 player online game made with C++ by Oscar Pons and David Tello. It is a third person shooter with spaceships where you have to be the last one standing.
 
 Link to repo: https://github.com/ponspack9/Xarxes
+
 Link to release: https://github.com/ponspack9/Xarxes/releases/tag/1.0
 
 ## Instructions
