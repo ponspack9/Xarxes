@@ -1,9 +1,10 @@
 # Xarxes
 
-GAME NAME is a 2 player online game made with C++ by Oscar Pons and David Tello, it is a tribute to hte game Asteroids but with a second player and the objective is to destroy the enemy ship while avoiding and destroying asteroids.
+Spaceship Royale is a 3 player online game made with C++ by Oscar Pons and David Tello.
+It is a third person shooter with spaceships where you have to be the last one standing.
 
 ## Instructions
-
+First you will have to have a server started and then there must be 3 players connected to start the game, once the game has started until it has finished no other players can connect to the server. Once you are killed you will be disconnected until only 1 player remains who will be sent a Win message and then disconnected after a few seconds and the game will finish making it able to start a new game.
 
 ## Features
 **feature, author, degree of completeness (tried but not achieved/achieved with some known bugs/completely achieved), result accomplished & known bugs/issues**
