@@ -9,8 +9,11 @@ Link to release: https://github.com/ponspack9/Xarxes/releases/tag/1.0
 First you will have to have a server started and then there must be 3 players connected to start the game, once the game has started until it has finished no other players can connect to the server. Once you are killed you will be disconnected until only 1 player remains who will be sent a Win message and then disconnected after a few seconds and the game will finish making it able to start a new game.
 
 A -> turn anticlockwise
+
 D -> turn clockwise
+
 DOWN ARROW -> Propel spaceship
+
 LEFT ARROW -> shoot projectile
 
 ## Features
@@ -19,7 +22,7 @@ LEFT ARROW -> shoot projectile
   * Possible reasons may be: ??
 * [x] [Oscar] Accept 2 players or more -> Completely Achieved
 * [x] [David] Handle join/leave events -> Completely Achieved
-* [x] [Oscar]World State Replication -> Achieved with some known bugs
+* [x] [Oscar]World State Replication -> Completely Achieved
     * ~~Liada padre a partir de mas de un jugador, o que el jugador 1 abandone y vuelva a entrar, algo con las ID esta pasando imagino~~
 	* ~~NetworkId problems confirmed, now it's solved the previous issue (RegisterWithNetworkId). Remains a problem with delayed destroys and new instantiations: when the server has already delay destroyed a bullet and creates a new one, it assigns an index free for him but occupied on the clients, then an assert arises. Changing the index should be the solution but then the networkID is fuc*ed up, so I will keep thinking. I think I can confirm this bug because it shows up more frecuently when the intervals of sending the world state replication are longer, being easy to encounter this "data race".~~
 	* ~~Thinking in having a confirmation from clients before unregistering a netobject from the server. That should work (Difficult&synch!)~~
