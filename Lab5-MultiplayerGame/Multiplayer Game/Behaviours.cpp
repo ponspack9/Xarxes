@@ -114,7 +114,7 @@ void Spaceship::onCollisionTriggered(Collider &c1, Collider &c2)
 		{
 			NetworkDestroy(c2.gameObject); // Destroy the laser
 		
-			if (hitPoints > 0)
+			if (isGame && hitPoints > 0)
 			{
 				hitPoints--;
 				NetworkUpdate(gameObject);

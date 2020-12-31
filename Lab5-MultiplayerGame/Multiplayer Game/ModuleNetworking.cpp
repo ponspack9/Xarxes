@@ -166,7 +166,24 @@ bool ModuleNetworking::gui()
 		ImGui::Text(" - # Packet sent: %u", sentPacketsCount);
 		ImGui::Text(" - # Packet received: %u", receivedPacketsCount);
 
-		ImGui::Text(" - # Networked objects: %u", App->modLinkingContext->getNetworkGameObjectsCount());
+
+		// EXTRA
+		ImGui::Separator();
+		GameObject* networkGameObjects[MAX_NETWORK_OBJECTS] = {};
+		uint16 networkGameObjectsCount;
+		App->modLinkingContext->getNetworkGameObjects(networkGameObjects, &networkGameObjectsCount);
+		char netstr[256];
+		sprintf(netstr, "# Networked objects : % u", App->modLinkingContext->getNetworkGameObjectsCount());
+		if (ImGui::CollapsingHeader(netstr, ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			for (int i = 0; i < networkGameObjectsCount; i++)
+			{
+				GameObject* obj = networkGameObjects[i];
+				//if (obj->networkId != 0)
+				uint16 arrayIndex = obj->networkId & 0xffff;
+				ImGui::Text("ID: %d NetID: %d ArrayIndex: %hu State: %d", obj->id, obj->networkId, arrayIndex, (int)obj->state);
+			}
+		}
 
 		if (ImGui::Button("Disconnect")) {
 			disconnect();

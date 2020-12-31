@@ -7,6 +7,7 @@ struct Behaviour
 {
 	GameObject *gameObject = nullptr;
 	bool isServer = false;
+	bool isGame = false;
 	bool isLocalPlayer = false;
 
 	virtual BehaviourType type() const = 0;

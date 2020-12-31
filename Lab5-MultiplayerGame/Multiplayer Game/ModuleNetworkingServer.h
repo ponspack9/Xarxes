@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ModuleNetworking.h"
+#include "ReplicationManagerServer.h"
 
 class ModuleNetworkingServer : public ModuleNetworking
 {
@@ -47,13 +48,15 @@ private:
 		bool connected = false;
 		sockaddr_in address;
 		uint32 clientId;
-		std::string name = "Player1";
+		std::string name = "";
 		GameObject *gameObject = nullptr;
 
-		// TODO(you): UDP virtual connection lab session
-		real64 secondsSinceLastPingRecieved = 0;
-		// TODO(you): World state replication lab session
-		// TODO(you): Reliability on top of UDP lab session
+		// TODO(Oscar): UDP virtual connection
+		real32 secondsSinceLastPingRecieved = 0;
+		// TODO(Oscar): World state replication lab session
+		ReplicationManagerServer replicationManagerServer;
+		// TODO(Oscar): Reliability on top of UDP lab session
+		DeliveryManager deliveryManager;
 
 		uint32 nextExpectedInputSequenceNumber = 0;
 		InputController gamepad;
@@ -120,11 +123,12 @@ private:
 
 	uint16 listenPort = 0;
 
-
-
-	// TODO(you): UDP virtual connection lab session
+	// TODO(Oscar): UDP virtual connection 
 	real32 secondsSinceLastPingSent = 0;
+	real32 secondsSinceLastWorldStateSent = 0;
 
+	bool isGameStarted = false;
+	uint8 last_num_connected = 0;
 };
 
 

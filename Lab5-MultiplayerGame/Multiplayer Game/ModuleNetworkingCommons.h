@@ -1,6 +1,7 @@
 #pragma once
 
 #define PROTOCOL_ID                           (uint32)'GAME'
+#define REPLICATION_ID                        (uint32)'REPL'
 
 // Packet header ///////////////////////////////////////////////////////
 

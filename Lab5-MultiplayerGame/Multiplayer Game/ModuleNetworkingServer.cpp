@@ -56,6 +56,7 @@ void ModuleNetworkingServer::onGui()
 			{
 				if (clientProxies[i].connected)
 				{
+					ImGui::Separator();
 					ImGui::Text("CLIENT %d", count++);
 					ImGui::Text(" - address: %d.%d.%d.%d",
 						clientProxies[i].address.sin_addr.S_un.S_un_b.s_b1,
@@ -73,12 +74,30 @@ void ModuleNetworkingServer::onGui()
 					{
 						ImGui::Text(" - gameObject net id: (null)");
 					}
-					
 					ImGui::Separator();
+					ImGui::Text("Packets sent, pending ACK:");
+
+					int limit = 9;
+					int c = 0;
+					for (Delivery* delivery : clientProxies[i].deliveryManager.pendingDeliveries)
+					{
+						if (c > limit)
+							c = 0;
+						else if (c > 0)
+							ImGui::SameLine();
+						// Printing in red packets about to get discarded
+						if(Time.time - delivery->dispatchTime >= PENDING_PACKETS_TIMEOUT_SECONDS -1)
+							ImGui::TextColored({255,0,0,255},"%hd", delivery->sequenceNumber);
+						else
+							ImGui::Text("%hd", delivery->sequenceNumber);
+						c++;
+					}
+					ImGui::Separator();
+					
 				}
 			}
 
-			ImGui::Checkbox("Render colliders", &App->modRender->mustRenderColliders);
+			//ImGui::Checkbox("Render colliders", &App->modRender->mustRenderColliders);
 		}
 	}
 }
@@ -124,10 +143,11 @@ void ModuleNetworkingServer::onPacketReceived(const InputMemoryStream &packet, c
 				else
 				{
 					// NOTE(jesus): Server is full...
+					LOG("Server is full, wait for next game");
 				}
 			}
 
-			if (proxy != nullptr)
+			if (proxy != nullptr && isGameStarted == false)
 			{
 				// Send welcome to the new player
 				OutputMemoryStream welcomePacket;
@@ -145,16 +165,20 @@ void ModuleNetworkingServer::onPacketReceived(const InputMemoryStream &packet, c
 				{
 					GameObject *gameObject = networkGameObjects[i];
 					
-					// TODO(you): World state replication lab session
+					// TODO(Oscar): World state replication lab session
+					proxy->replicationManagerServer.create(gameObject->networkId);
 				}
-
 				LOG("Message received: hello - from player %s", proxy->name.c_str());
 			}
 			else
 			{
+
 				OutputMemoryStream unwelcomePacket;
 				unwelcomePacket << PROTOCOL_ID;
-				unwelcomePacket << ServerMessage::Unwelcome;
+				if (isGameStarted)
+					unwelcomePacket << ServerMessage::GameFull;
+				else
+					unwelcomePacket << ServerMessage::Unwelcome;
 				sendPacket(unwelcomePacket, fromAddress);
 
 				WLOG("Message received: UNWELCOMED hello - server is full");
@@ -183,11 +207,19 @@ void ModuleNetworkingServer::onPacketReceived(const InputMemoryStream &packet, c
 						unpackInputControllerButtons(inputData.buttonBits, proxy->gamepad);
 						proxy->gameObject->behaviour->onInput(proxy->gamepad);
 						proxy->nextExpectedInputSequenceNumber = inputData.sequenceNumber + 1;
+
+						// TODO(Oscar): send with the replication packet
+						// Fast solution to see if things are working
+						OutputMemoryStream packet;
+						packet << PROTOCOL_ID;
+						packet << ServerMessage::Input;
+						packet << inputData.sequenceNumber;
+						sendPacket(packet, fromAddress);
 					}
 				}
 			}
 		}
-		// TODO(Oscar): UDP virtual connection lab session DONE
+		// TODO(Oscar): UDP virtual connection 
 		else if (message == ClientMessage::Ping)
 		{
 			if (proxy != nullptr)
@@ -196,8 +228,15 @@ void ModuleNetworkingServer::onPacketReceived(const InputMemoryStream &packet, c
 
 			}
 		}
-		
-		
+		// TODO(you): Reliability on top of UDP lab session
+		else if (message == ClientMessage::Ack)
+		{
+			if (proxy != nullptr)
+			{
+				proxy->deliveryManager.processAckdSequenceNumbers(packet);
+
+			}
+		}
 
 	}
 }
@@ -206,6 +245,73 @@ void ModuleNetworkingServer::onUpdate()
 {
 	if (state == ServerState::Listening)
 	{
+		// Check for Game Started
+		uint8 connected = 0;
+		for (ClientProxy client : clientProxies)
+		{
+			if (client.connected == true)
+				connected++;
+		}
+
+		if (connected == 0) //end game
+		{
+			isGameStarted = false;
+		}
+		else if (isGameStarted == false && connected == MAX_CLIENTS) //start game
+		{
+			for (ClientProxy clientProxy : clientProxies)
+			{
+				clientProxy.gameObject->behaviour->isGame = true;
+
+				OutputMemoryStream packet;
+				packet << PROTOCOL_ID;
+				packet << ServerMessage::GameStart;
+				sendPacket(packet, clientProxy.address);
+
+			}
+			isGameStarted = true;
+		}
+		else if (connected == 1) //win game
+		{
+			if (isGameStarted == true)
+			{
+				for (ClientProxy clientProxy : clientProxies)
+				{
+					OutputMemoryStream packet;
+					packet << PROTOCOL_ID;
+					packet << ServerMessage::GameWin;
+					sendPacket(packet, clientProxy.address);
+				}
+			}
+			else if (last_num_connected != connected)
+			{
+				for (ClientProxy clientProxy : clientProxies)
+				{
+					OutputMemoryStream packet;
+					packet << PROTOCOL_ID;
+					packet << ServerMessage::WaitingPlayers;
+					packet << connected;
+					sendPacket(packet, clientProxy.address);
+				}
+				last_num_connected = connected;
+			}
+		}
+		else //waiting for players
+		{
+			if (isGameStarted == false && last_num_connected != connected)
+			{
+				for (ClientProxy clientProxy : clientProxies)
+				{
+					OutputMemoryStream packet;
+					packet << PROTOCOL_ID;
+					packet << ServerMessage::WaitingPlayers;
+					packet << connected;
+					sendPacket(packet, clientProxy.address);
+				}
+				last_num_connected = connected;
+			}
+		}
+
 		// Handle networked game object destructions
 		for (DelayedDestroyEntry &destroyEntry : netGameObjectsToDestroyWithDelay)
 		{
@@ -219,14 +325,22 @@ void ModuleNetworkingServer::onUpdate()
 				}
 			}
 		}
+
+		// Flags to check if the action has been performed
+		// needed to send to ALL clients the data
 		bool resetSecondsSinceLastPingSent = false;
+		bool resetSecondsSinceLastWorldStateSent = false;
+
+		//Increment the timers
 		secondsSinceLastPingSent += Time.deltaTime;
+		secondsSinceLastWorldStateSent += Time.deltaTime;
+
 		for (ClientProxy &clientProxy : clientProxies)
 		{
 			if (clientProxy.connected)
 			{
+				// TODO(Oscar): UDP virtual connection
 				clientProxy.secondsSinceLastPingRecieved += Time.deltaTime;
-				// TODO(you): UDP virtual connection lab session DONE
 				if (clientProxy.secondsSinceLastPingRecieved >= DISCONNECT_TIMEOUT_SECONDS)
 				{
 					LOG("Player %s has disconnected", clientProxy.name.c_str());
@@ -241,21 +355,45 @@ void ModuleNetworkingServer::onUpdate()
 					packet << ServerMessage::Ping;
 					sendPacket(packet, clientProxy.address);
 					resetSecondsSinceLastPingSent = true;
-					DLOG("Ping sent to %s %s:% d", clientProxy.name.c_str(), clientProxy.address,ntohs(clientProxy.address.sin_port));
+					//DLOG("Ping sent to %s %s:% d", clientProxy.name.c_str(), clientProxy.address,ntohs(clientProxy.address.sin_port));
 				}
 				// Don't let the client proxy point to a destroyed game object
 				if (!IsValid(clientProxy.gameObject))
 				{
 					clientProxy.gameObject = nullptr;
 				}
+				// END UDP virtual connection
 
-				// TODO(you): World state replication lab session
+				// TODO(Oscar): World state replication
+				// TODO(Oscar): Reliability on top of UDP lab session
+				// REPLICATION_ID
+				// Sequence number
+				// Replication_type
+				// Replication_info
+				// ...
+				// Replication_type
+				// Replication_info
+				if (secondsSinceLastWorldStateSent >= SEND_WORLD_STATE_INTERVAL_SECONDS)
+				{
+					OutputMemoryStream packet;
+					packet << REPLICATION_ID;
+					Delivery* delivery = clientProxy.deliveryManager.writeSequenceNumber(packet);
+					// Server reconciliation, last ID of input
+					packet << clientProxy.nextExpectedInputSequenceNumber - 1;
+					//delivery->delegate = (DeliveryDelegate*)&clientProxy.deliveryDelegateServer;
+					clientProxy.replicationManagerServer.write(packet, delivery);
+					sendPacket(packet, clientProxy.address);
+					resetSecondsSinceLastWorldStateSent = true;
 
-				// TODO(you): Reliability on top of UDP lab session
+					clientProxy.deliveryManager.processTimedOutPackets();
+				}
+
 			}
 		}
 		if (resetSecondsSinceLastPingSent)
 			secondsSinceLastPingSent = 0;
+		if (resetSecondsSinceLastWorldStateSent)
+			secondsSinceLastWorldStateSent = 0;
 	}
 }
 
@@ -387,13 +525,16 @@ GameObject * ModuleNetworkingServer::instantiateNetworkObject()
 
 	// Register the object into the linking context
 	App->modLinkingContext->registerNetworkGameObject(gameObject);
+	uint16 arrayIndex = gameObject->networkId & 0xffff;
+	//DLOG("Instantiated network gameobject with ID: %d NetID: %d ArrayIndex: %hu State: %d", gameObject->id, gameObject->networkId, arrayIndex, (int)gameObject->state);
 
 	// Notify all client proxies' replication manager to create the object remotely
 	for (int i = 0; i < MAX_CLIENTS; ++i)
 	{
 		if (clientProxies[i].connected)
 		{
-			// TODO(you): World state replication lab session
+			// TODO(Oscar): World state replication lab session
+			clientProxies[i].replicationManagerServer.create(gameObject->networkId);
 		}
 	}
 
@@ -407,7 +548,8 @@ void ModuleNetworkingServer::updateNetworkObject(GameObject * gameObject)
 	{
 		if (clientProxies[i].connected)
 		{
-			// TODO(you): World state replication lab session
+			// TODO(Oscar): World state replication lab session
+			clientProxies[i].replicationManagerServer.update(gameObject->networkId);
 		}
 	}
 }
@@ -419,7 +561,8 @@ void ModuleNetworkingServer::destroyNetworkObject(GameObject * gameObject)
 	{
 		if (clientProxies[i].connected)
 		{
-			// TODO(you): World state replication lab session
+			// TODO(Oscar): World state replication lab session
+			clientProxies[i].replicationManagerServer.destroy(gameObject->networkId);
 		}
 	}
 

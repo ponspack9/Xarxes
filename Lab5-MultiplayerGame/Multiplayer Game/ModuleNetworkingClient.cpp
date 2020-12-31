@@ -51,6 +51,8 @@ void ModuleNetworkingClient::onStart()
 
 	secondsSinceLastHello = 9999.0f;
 	secondsSinceLastInputDelivery = 0.0f;
+
+	isDead(false);
 }
 
 void ModuleNetworkingClient::onGui()
@@ -96,6 +98,53 @@ void ModuleNetworkingClient::onGui()
 
 			ImGui::Text("Input:");
 			ImGui::InputFloat("Delivery interval (s)", &inputDeliveryIntervalSeconds, 0.01f, 0.1f, 4);
+
+			ImGui::Checkbox("Render colliders", &App->modRender->mustRenderColliders);
+
+		}
+	}
+	if (ImGui::CollapsingHeader("Debug Network Client", ImGuiTreeNodeFlags_DefaultOpen))
+	{
+		if (state == ClientState::Connecting)
+		{
+			ImGui::Text("Connecting to server...");
+		}
+		else if (state == ClientState::Connected)
+		{
+			ImGui::Text("Next expected replication packet: %hd", deliveryManager.nextExpectedSequenceNumber);
+
+			ImGui::Separator();
+
+			ImGui::Separator();
+			ImGui::Text("Packets recieved, pending ACK to send");
+
+			int limit = 9;
+			int c = 0;
+			for (uint32 i : deliveryManager.pendingAck)
+			{
+				if (c > limit)
+					c = 0;
+				else if (c > 0)
+					ImGui::SameLine();
+				ImGui::Text("%hd", i);
+				c++;
+			}
+
+			c = 0;
+			ImGui::Separator();
+			ImGui::Text("Next expected input ACK packet: %hd", inputDataFront);
+			ImGui::Text("Input packets to be sent:");
+			for (uint32 i = inputDataFront % ArrayCount(inputData); i < inputDataBack % ArrayCount(inputData); ++i)
+			{
+				if (c > limit)
+					c = 0;
+				else if (c > 0)
+					ImGui::SameLine();
+
+				uint32 indata = inputData[i].sequenceNumber;
+				ImGui::Text("%hd", indata);
+				c++;
+			}
 		}
 	}
 }
@@ -105,37 +154,86 @@ void ModuleNetworkingClient::onPacketReceived(const InputMemoryStream &packet, c
 
 	uint32 protoId;
 	packet >> protoId;
-	if (protoId != PROTOCOL_ID) return;
 
-	ServerMessage message;
-	packet >> message;
-
-	if (state == ClientState::Connecting)
+	if (protoId == PROTOCOL_ID)
 	{
-		if (message == ServerMessage::Welcome)
-		{
-			packet >> playerId;
-			packet >> networkId;
+		ServerMessage message;
+		packet >> message;
 
-			LOG("ModuleNetworkingClient::onPacketReceived() - Welcome from server");
-			state = ClientState::Connected;
-		}
-		else if (message == ServerMessage::Unwelcome)
+		if (state == ClientState::Connecting)
 		{
-			WLOG("ModuleNetworkingClient::onPacketReceived() - Unwelcome from server :-(");
-			disconnect();
+			if (message == ServerMessage::Welcome)
+			{
+				packet >> playerId;
+				packet >> networkId;
+
+				LOG("ModuleNetworkingClient::onPacketReceived() - Welcome from server");
+				state = ClientState::Connected;
+			}
+			else if (message == ServerMessage::Unwelcome)
+			{
+				WLOG("ModuleNetworkingClient::onPacketReceived() - Unwelcome from server :-(");
+				disconnect();
+			}
+			else if (message == ServerMessage::GameFull)
+			{
+				WLOG("ModuleNetworkingClient::onPacketReceived() - Game has already started");
+				disconnect();
+			}
+		}
+		else if (state == ClientState::Connected)
+		{
+			// TODO(Oscar): UDP virtual connection
+			if (message == ServerMessage::Ping)
+			{
+				secondsSinceLastPingRecieved = 0;
+			}
+			else if (message == ServerMessage::Input)
+			{
+				packet >> inputDataFront;
+				inputDataFront++;
+			}
+			else if (message == ServerMessage::GameWin)
+			{
+				LOG("Congratulations! You won! --- Disconnecting in 3 seconds", secondsToDisconnect);
+				secondsToDisconnect = 3.0f;
+				is_win = true;
+			}
+			else if (message == ServerMessage::GameStart)
+			{
+				LOG("Starting game in 5 seconds!", secondsToStartGame);
+				secondsToStartGame = 5.0f;
+				gameToStart = true;
+			}
+			else if (message == ServerMessage::WaitingPlayers)
+			{
+				uint8 num_players = 0;
+				packet >> num_players;
+				LOG("Waiting for players %d/3", num_players);
+			}
 		}
 	}
-	else if (state == ClientState::Connected)
+	// TODO(Oscar): World state replication lab session
+	// TODO(Oscar): Reliability on top of UDP lab session
+	else if (protoId == REPLICATION_ID)
 	{
-		// TODO(you): UDP virtual connection lab session
-		if (message == ServerMessage::Ping)
+		if (state == ClientState::Connected)
 		{
-			secondsSinceLastPingRecieved = 0;
-		}
-		// TODO(you): World state replication lab session
+			deliveryManager.processSequenceNumber(packet);
+			// Server reconciliation
+			// Id of last input received by the server (ACK)
+			uint32 i = 0;
+			packet >> i;
 
-		// TODO(you): Reliability on top of UDP lab session
+			if (i < inputDataFront-1)
+			{
+				// Reapply the inputs from i to inputDataBack 
+				inputDataFront = i+1;
+			}
+
+			replicationManagerClient.read(packet);
+		}
+
 	}
 }
 
@@ -182,6 +280,18 @@ void ModuleNetworkingClient::onUpdate()
 			disconnect();
 		}
 
+		// TODO(you): Reliability on top of UDP lab session
+		secondsSinceLastAckSent += Time.deltaTime;
+		if (secondsSinceLastAckSent >= PENDING_PACKETS_TIMEOUT_SECONDS && deliveryManager.hasSequenceNumbersPendingAck())
+		{
+			OutputMemoryStream packet;
+			packet << PROTOCOL_ID;
+			packet << ClientMessage::Ack;
+			deliveryManager.writeSequenceNumbersPendingAck(packet);
+			sendPacket(packet, serverAddress);
+			secondsSinceLastAckSent = 0;
+
+		}
 		// Process more inputs if there's space
 		if (inputDataBack - inputDataFront < ArrayCount(inputData))
 		{
@@ -205,7 +315,7 @@ void ModuleNetworkingClient::onUpdate()
 			packet << PROTOCOL_ID;
 			packet << ClientMessage::Input;
 
-			// TODO(you): Reliability on top of UDP lab session
+			// TODO(Oscar): Reliability on top of UDP lab session
 
 			for (uint32 i = inputDataFront; i < inputDataBack; ++i)
 			{
@@ -217,7 +327,7 @@ void ModuleNetworkingClient::onUpdate()
 			}
 
 			// Clear the queue
-			inputDataFront = inputDataBack;
+			//inputDataFront = inputDataBack;
 
 			sendPacket(packet, serverAddress);
 		}
@@ -232,7 +342,36 @@ void ModuleNetworkingClient::onUpdate()
 		}
 		else
 		{
+			if (is_dead) onConnectionReset(serverAddress);
+
 			// This means that the player has been destroyed (e.g. killed)
+		}
+
+		if (gameToStart)
+		{
+			if (secondsToStartGame > 0.0f)
+			{
+				secondsToStartGame -= Time.deltaTime;
+			}
+			else
+			{
+				LOG("Starting Game!");
+				gameToStart = false;
+				playerGameObject->position = { Random.next() * 1000, Random.next() * 1000};
+			}
+		}
+
+		if (is_win)
+		{
+			if (secondsToDisconnect > 0.0f)
+			{
+				secondsToDisconnect -= Time.deltaTime;
+			}
+			else
+			{
+				is_win = false;
+				disconnect();
+			}
 		}
 	}
 }
@@ -241,6 +380,8 @@ void ModuleNetworkingClient::onConnectionReset(const sockaddr_in & fromAddress)
 {
 	// TODO Show UI message to the player saying that has been
 	// disconnected from the server or the server is not available
+
+	LOG("You were killed");
 	disconnect();
 }
 

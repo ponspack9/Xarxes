@@ -23,7 +23,13 @@ void ModuleLinkingContext::registerNetworkGameObjectWithNetworkId(GameObject * g
 	ASSERT(networkId != 0);
 	uint16 arrayIndex = arrayIndexFromNetworkId(networkId);
 	ASSERT(arrayIndex < MAX_NETWORK_OBJECTS);
-	ASSERT(networkGameObjects[arrayIndex] == nullptr);
+	//ASSERT(networkGameObjects[arrayIndex] == nullptr);
+	// TODO(Oscar) world state replication bug
+	if (networkGameObjects[arrayIndex] != nullptr)
+	{
+		networkGameObjectsCount--;
+		Destroy(gameObject);
+	}
 	networkGameObjects[arrayIndex] = gameObject;
 	gameObject->networkId = networkId;
 	networkGameObjectsCount++;

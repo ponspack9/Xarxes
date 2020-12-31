@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ModuleNetworking.h"
+#include "ReplicationManagerClient.h"
 
 class ModuleNetworkingClient : public ModuleNetworking
 {
@@ -14,7 +15,7 @@ public:
 
 	void setPlayerInfo(const char *playerName, uint8 spaceshipType);
 
-
+	void isDead(bool dead) { is_dead = dead; }
 
 private:
 
@@ -61,6 +62,12 @@ private:
 	uint32 playerId = 0;
 	uint32 networkId = 0;
 
+	bool is_dead = false;
+	bool is_win = false;
+	bool gameToStart = false;
+
+	float secondsToDisconnect = 0.0f;
+	float secondsToStartGame = 5.0f;
 
 	// Connecting stage
 
@@ -92,15 +99,17 @@ private:
 	// Replication
 	//////////////////////////////////////////////////////////////////////
 
-	// TODO(you): World state replication lab session
-
+	// TODO(Oscar): World state replication lab session
+	ReplicationManagerClient replicationManagerClient;
 
 
 	//////////////////////////////////////////////////////////////////////
 	// Delivery manager
 	//////////////////////////////////////////////////////////////////////
 
-	// TODO(you): Reliability on top of UDP lab session
+	// TODO(Oscar): Reliability on top of UDP lab session
+	DeliveryManager deliveryManager;
+	real32 secondsSinceLastAckSent = 0;
 
 
 
